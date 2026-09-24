@@ -22,6 +22,20 @@ const useSensorStore = create((set, get) => ({
   connected: false,
   setConnected: (v) => set({ connected: v }),
 
+  // Reduce Effects accessibility / performance mode
+  reduceEffects: false,
+  setReduceEffects: (v) => {
+    if (v) document.body.classList.add('reduce-effects');
+    else document.body.classList.remove('reduce-effects');
+    set({ reduceEffects: v });
+  },
+  toggleReduceEffects: () => {
+    const next = !get().reduceEffects;
+    if (next) document.body.classList.add('reduce-effects');
+    else document.body.classList.remove('reduce-effects');
+    set({ reduceEffects: next });
+  },
+
   // Joint data (1-indexed in accessors, 0-indexed in array)
   joints: Array.from({ length: 6 }, (_, i) => initialJoint(i)),
 
@@ -47,7 +61,6 @@ const useSensorStore = create((set, get) => ({
   /**
    * Update all sensor data in one batch.
    * Called by the mock stream at ~20Hz.
-   * Does NOT trigger React re-render — consumers use subscribe().
    */
   updateSensors: (data) => {
     const state = get();

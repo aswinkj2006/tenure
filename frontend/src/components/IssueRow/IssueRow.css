@@ -1,24 +1,22 @@
 /* ============================================
    Tenure — Issue Row Component
-   Soft card per issue in log list
+   Frosted glass card per issue in log list
    ============================================ */
 
 .issue-row {
   display: flex;
   align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-4) var(--space-5);
-  background: var(--surface);
-  border: 1px solid var(--blush);
-  border-radius: var(--radius-card);
-  box-shadow: var(--shadow-card);
+  gap: 16px;
+  padding: 16px 20px;
   cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-out);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+  margin-bottom: 8px;
 }
 
 .issue-row:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-hover);
+  box-shadow: 0 10px 28px rgba(51, 36, 21, 0.1);
+  border-color: rgba(184, 114, 59, 0.35);
 }
 
 .issue-row__severity-dot {
@@ -31,9 +29,9 @@
 }
 
 .issue-row__title {
-  font-size: var(--text-base);
-  font-weight: var(--weight-medium);
-  color: var(--charcoal);
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--charcoal, #332415);
   line-height: 1.4;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -43,26 +41,26 @@
 .issue-row__meta {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  margin-top: var(--space-1);
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
+  gap: 10px;
+  margin-top: 4px;
+  font-size: 0.76rem;
+  color: var(--text-secondary, #7A6552);
 }
 
 .issue-row__meta-separator {
-  color: var(--blush);
+  color: var(--blush, #E2CDB2);
 }
 
 .issue-row__badges {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: 8px;
   flex-shrink: 0;
 }
 
 .issue-row__time {
-  font-size: var(--text-sm);
-  color: var(--text-tertiary);
+  font-size: 0.78rem;
+  color: var(--text-tertiary, #A8967F);
   white-space: nowrap;
   flex-shrink: 0;
 }

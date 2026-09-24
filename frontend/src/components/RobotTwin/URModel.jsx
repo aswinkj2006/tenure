@@ -1,4 +1,4 @@
-import React, { useRef, useMemo } from 'react';
+import React, { useRef, useMemo, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import useSensorStore from '../../stores/sensorStore';
@@ -17,8 +17,12 @@ export default function URModel({ onJointClick }) {
   const j6Ref = useRef();
   const tcpRef = useRef();
 
-  // Joint current smoothed angles
-  const anglesRef = useRef([0, -Math.PI / 4, Math.PI / 2, -Math.PI / 4, 0, 0]);
+  // Energy pulse mesh refs
+  const energyUpperRef = useRef();
+  const energyForearmRef = useRef();
+
+  // Joint current smoothed angles starting from compact folded boot pose
+  const anglesRef = useRef([0, -Math.PI / 2, Math.PI * 0.85, -Math.PI / 2, 0, 0]);
 
   // Subscribe to store state for UI interaction without full re-render
   const hoveredJoint = useSensorStore((s) => s.hoveredJoint);
@@ -27,12 +31,12 @@ export default function URModel({ onJointClick }) {
   const setHoveredJoint = useSensorStore((s) => s.setHoveredJoint);
   const setSelectedJoint = useSensorStore((s) => s.setSelectedJoint);
 
-  // Reusable materials
+  // Materials
   const matMetal = useMemo(
     () =>
       new THREE.MeshStandardMaterial({
         color: '#DDD7D0',
-        roughness: 0.4,
+        roughness: 0.38,
         metalness: 0.35,
       }),
     []
@@ -42,8 +46,8 @@ export default function URModel({ onJointClick }) {
     () =>
       new THREE.MeshStandardMaterial({
         color: '#2C2724',
-        roughness: 0.5,
-        metalness: 0.2,
+        roughness: 0.45,
+        metalness: 0.25,
       }),
     []
   );
@@ -51,9 +55,20 @@ export default function URModel({ onJointClick }) {
   const matTerracotta = useMemo(
     () =>
       new THREE.MeshStandardMaterial({
-        color: '#D97757',
-        roughness: 0.45,
-        metalness: 0.15,
+        color: '#B8723B',
+        roughness: 0.4,
+        metalness: 0.2,
+      }),
+    []
+  );
+
+  const matEnergy = useMemo(
+    () =>
+      new THREE.MeshStandardMaterial({
+        color: '#B8723B',
+        emissive: new THREE.Color('#B8723B'),
+        emissiveIntensity: 0.4,
+        roughness: 0.2,
       }),
     []
   );
@@ -68,11 +83,11 @@ export default function URModel({ onJointClick }) {
     []
   );
 
-  useFrame((_, dt) => {
+  useFrame((state, dt) => {
     const store = useSensorStore.getState();
     const joints = store.joints || [];
 
-    // Target angles from store or fallback
+    // Target angles from store or nominal operating pose
     const targets = [
       joints[0]?.position ?? 0,
       joints[1]?.position ?? -0.8,
@@ -84,7 +99,7 @@ export default function URModel({ onJointClick }) {
 
     // Smooth damp angles
     for (let i = 0; i < 6; i++) {
-      anglesRef.current[i] = dampAngle(anglesRef.current[i], targets[i], 12, dt);
+      anglesRef.current[i] = dampAngle(anglesRef.current[i], targets[i], 10, dt);
     }
 
     // Apply rotations
@@ -94,6 +109,19 @@ export default function URModel({ onJointClick }) {
     if (j4Ref.current) j4Ref.current.rotation.z = anglesRef.current[3];
     if (j5Ref.current) j5Ref.current.rotation.y = anglesRef.current[4];
     if (j6Ref.current) j6Ref.current.rotation.x = anglesRef.current[5];
+
+    // Torque energy pulse animation
+    const time = state.clock.getElapsedTime();
+    const pulseIntensity = 0.3 + 0.4 * Math.sin(time * 4);
+    if (matEnergy) {
+      if (store.anomalyActive) {
+        matEnergy.emissive.set('#B23A2E');
+        matEnergy.emissiveIntensity = 0.8 + 0.5 * Math.sin(time * 8);
+      } else {
+        matEnergy.emissive.set('#B8723B');
+        matEnergy.emissiveIntensity = pulseIntensity;
+      }
+    }
   });
 
   const handlePointerOver = (idx, e) => {
@@ -127,15 +155,12 @@ export default function URModel({ onJointClick }) {
         onPointerOut={handlePointerOut}
         onClick={(e) => handleClick(0, e)}
       >
-        {/* Base flange / mounting ring */}
         <mesh position={[0, 0.015, 0]} material={matDarkAccent} castShadow receiveShadow>
           <cylinderGeometry args={[0.085, 0.09, 0.03, 32]} />
         </mesh>
-        {/* Base pedestal body */}
         <mesh position={[0, BASE_H / 2 + 0.015, 0]} material={matMetal} castShadow receiveShadow>
           <cylinderGeometry args={[0.075, 0.075, BASE_H - 0.03, 32]} />
         </mesh>
-        {/* Decorative seam */}
         <mesh position={[0, BASE_H * 0.4, 0]} material={matChamfer}>
           <cylinderGeometry args={[0.076, 0.076, 0.005, 32]} />
         </mesh>
@@ -143,7 +168,6 @@ export default function URModel({ onJointClick }) {
 
       {/* ── JOINT 1 (Base Yaw) ── */}
       <group ref={j1Ref} position={[0, BASE_H, 0]}>
-        {/* Status ring at Joint 1 */}
         <group position={[0, 0.01, 0]}>
           <JointRing
             status={storeJoints[0]?.status || 'ok'}
@@ -155,13 +179,14 @@ export default function URModel({ onJointClick }) {
             <JointLabel
               name={JOINT_NAMES[0]}
               value={(anglesRef.current[0] * 180) / Math.PI}
+              torque={storeJoints[0]?.torque}
               status={storeJoints[0]?.status || 'ok'}
               isAnomaly={anomalyJoint === 0}
             />
           )}
         </group>
 
-        {/* Shoulder housing (rotates with J1) */}
+        {/* Shoulder housing */}
         <group
           position={[0, 0.06, 0]}
           onPointerOver={(e) => handlePointerOver(0, e)}
@@ -171,7 +196,6 @@ export default function URModel({ onJointClick }) {
           <mesh material={matDarkAccent} castShadow>
             <cylinderGeometry args={[0.068, 0.072, 0.1, 32]} />
           </mesh>
-          {/* Terracotta cap */}
           <mesh position={[0, 0.052, 0]} material={matTerracotta}>
             <cylinderGeometry args={[0.05, 0.05, 0.006, 32]} />
           </mesh>
@@ -185,11 +209,9 @@ export default function URModel({ onJointClick }) {
           onPointerOut={handlePointerOut}
           onClick={(e) => handleClick(1, e)}
         >
-          {/* Shoulder joint barrel */}
           <mesh rotation={[Math.PI / 2, 0, 0]} material={matDarkAccent} castShadow>
             <cylinderGeometry args={[0.062, 0.062, 0.12, 32]} />
           </mesh>
-          {/* Status ring for Shoulder */}
           <group rotation={[0, Math.PI / 2, 0]}>
             <JointRing
               status={storeJoints[1]?.status || 'ok'}
@@ -202,19 +224,19 @@ export default function URModel({ onJointClick }) {
             <JointLabel
               name={JOINT_NAMES[1]}
               value={(anglesRef.current[1] * 180) / Math.PI}
+              torque={storeJoints[1]?.torque}
               status={storeJoints[1]?.status || 'ok'}
               isAnomaly={anomalyJoint === 1}
             />
           )}
 
-          {/* Upper arm body */}
+          {/* Upper arm body + Energy Flow Pulse */}
           <group position={[0, UPPER_ARM_L / 2, 0]}>
             <mesh material={matMetal} castShadow>
               <cylinderGeometry args={[0.045, 0.05, UPPER_ARM_L, 24]} />
             </mesh>
-            {/* Longitudinal accent line */}
-            <mesh position={[0.046, 0, 0]} material={matTerracotta}>
-              <boxGeometry args={[0.003, UPPER_ARM_L * 0.7, 0.008]} />
+            <mesh ref={energyUpperRef} position={[0.046, 0, 0]} material={matEnergy}>
+              <boxGeometry args={[0.004, UPPER_ARM_L * 0.75, 0.008]} />
             </mesh>
           </group>
 
@@ -226,11 +248,9 @@ export default function URModel({ onJointClick }) {
             onPointerOut={handlePointerOut}
             onClick={(e) => handleClick(2, e)}
           >
-            {/* Elbow joint barrel */}
             <mesh rotation={[Math.PI / 2, 0, 0]} material={matDarkAccent} castShadow>
               <cylinderGeometry args={[0.055, 0.055, 0.11, 32]} />
             </mesh>
-            {/* Status ring for Elbow */}
             <group rotation={[0, Math.PI / 2, 0]}>
               <JointRing
                 status={storeJoints[2]?.status || 'ok'}
@@ -243,19 +263,19 @@ export default function URModel({ onJointClick }) {
               <JointLabel
                 name={JOINT_NAMES[2]}
                 value={(anglesRef.current[2] * 180) / Math.PI}
+                torque={storeJoints[2]?.torque}
                 status={storeJoints[2]?.status || 'ok'}
                 isAnomaly={anomalyJoint === 2}
               />
             )}
 
-            {/* Forearm body */}
+            {/* Forearm body + Energy Flow Pulse */}
             <group position={[0, FOREARM_L / 2, 0]}>
               <mesh material={matMetal} castShadow>
                 <cylinderGeometry args={[0.038, 0.042, FOREARM_L, 24]} />
               </mesh>
-              {/* Subtle accent bar */}
-              <mesh position={[-0.039, 0, 0]} material={matDarkAccent}>
-                <boxGeometry args={[0.002, FOREARM_L * 0.6, 0.006]} />
+              <mesh ref={energyForearmRef} position={[-0.039, 0, 0]} material={matEnergy}>
+                <boxGeometry args={[0.003, FOREARM_L * 0.7, 0.006]} />
               </mesh>
             </group>
 
@@ -282,6 +302,7 @@ export default function URModel({ onJointClick }) {
                 <JointLabel
                   name={JOINT_NAMES[3]}
                   value={(anglesRef.current[3] * 180) / Math.PI}
+                  torque={storeJoints[3]?.torque}
                   status={storeJoints[3]?.status || 'ok'}
                   isAnomaly={anomalyJoint === 3}
                 />
@@ -310,6 +331,7 @@ export default function URModel({ onJointClick }) {
                   <JointLabel
                     name={JOINT_NAMES[4]}
                     value={(anglesRef.current[4] * 180) / Math.PI}
+                    torque={storeJoints[4]?.torque}
                     status={storeJoints[4]?.status || 'ok'}
                     isAnomaly={anomalyJoint === 4}
                   />
@@ -323,26 +345,21 @@ export default function URModel({ onJointClick }) {
                   onPointerOut={handlePointerOut}
                   onClick={(e) => handleClick(5, e)}
                 >
-                  {/* Flange disc */}
                   <mesh material={matDarkAccent} castShadow>
                     <cylinderGeometry args={[0.032, 0.032, 0.025, 24]} />
                   </mesh>
-                  {/* Tool connector */}
                   <mesh position={[0, 0.02, 0]} material={matTerracotta}>
                     <cylinderGeometry args={[0.02, 0.025, 0.015, 24]} />
                   </mesh>
 
-                  {/* Gripper Fingers (Industrial Two-Jaw Gripper) */}
+                  {/* Gripper Fingers */}
                   <group position={[0, 0.032, 0]}>
-                    {/* Gripper body */}
                     <mesh material={matDarkAccent}>
                       <boxGeometry args={[0.045, 0.012, 0.025]} />
                     </mesh>
-                    {/* Left finger */}
                     <mesh position={[-0.016, 0.02, 0]} material={matMetal}>
                       <boxGeometry args={[0.006, 0.028, 0.014]} />
                     </mesh>
-                    {/* Right finger */}
                     <mesh position={[0.016, 0.02, 0]} material={matMetal}>
                       <boxGeometry args={[0.006, 0.028, 0.014]} />
                     </mesh>
@@ -363,6 +380,7 @@ export default function URModel({ onJointClick }) {
                     <JointLabel
                       name={JOINT_NAMES[5]}
                       value={(anglesRef.current[5] * 180) / Math.PI}
+                      torque={storeJoints[5]?.torque}
                       status={storeJoints[5]?.status || 'ok'}
                       isAnomaly={anomalyJoint === 5}
                     />

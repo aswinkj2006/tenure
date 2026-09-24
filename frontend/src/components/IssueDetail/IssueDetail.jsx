@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { X, Download } from 'lucide-react';
 import Badge from '../common/Badge';
 import Skeleton from '../common/Skeleton';
@@ -6,7 +7,8 @@ import ErrorState from '../common/ErrorState';
 import Chatbot from '../Chatbot/Chatbot';
 import CitationChip from '../Chatbot/CitationChip';
 import { getLogDetail, getExportPdfUrl } from '../../api/client';
-import { friendlyJointName, formatValue, formatTimestamp, relativeTime } from '../../utils/format';
+import { friendlyJointName, formatValue, formatTimestamp } from '../../utils/format';
+import { SPRING_GENTLE } from '../../utils/motion';
 import './IssueDetail.css';
 
 export default function IssueDetail({ anomalyId, onClose }) {
@@ -31,7 +33,6 @@ export default function IssueDetail({ anomalyId, onClose }) {
     if (anomalyId) fetchDetail();
   }, [anomalyId]);
 
-  // Close on Escape
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') onClose?.();
@@ -42,7 +43,6 @@ export default function IssueDetail({ anomalyId, onClose }) {
 
   if (!anomalyId) return null;
 
-  // Convert conversation to chatbot message format
   const chatMessages = (detail?.conversation || []).map((msg, i) => ({
     id: `conv-${i}`,
     role: msg.role,
@@ -53,8 +53,20 @@ export default function IssueDetail({ anomalyId, onClose }) {
 
   return (
     <>
-      <div className="issue-detail-overlay" onClick={onClose} />
-      <div className="issue-detail">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="issue-detail-overlay"
+        onClick={onClose}
+      />
+      <motion.div
+        initial={{ x: '100%' }}
+        animate={{ x: 0 }}
+        exit={{ x: '100%' }}
+        transition={SPRING_GENTLE}
+        className="issue-detail glass-strong"
+      >
         {/* Header */}
         <div className="issue-detail__header">
           <div className="issue-detail__header-left">
@@ -63,7 +75,7 @@ export default function IssueDetail({ anomalyId, onClose }) {
           </div>
           <div className="issue-detail__actions">
             <a
-              className="issue-detail__export"
+              className="issue-detail__export glass-subtle"
               href={getExportPdfUrl(anomalyId)}
               download
               aria-label="Export as PDF"
@@ -71,8 +83,8 @@ export default function IssueDetail({ anomalyId, onClose }) {
               <Download size={14} strokeWidth={1.5} />
               Export PDF
             </a>
-            <button className="issue-detail__close" onClick={onClose} aria-label="Close">
-              <X size={20} strokeWidth={1.5} />
+            <button className="issue-detail__close glass-subtle" onClick={onClose} aria-label="Close">
+              <X size={18} strokeWidth={1.5} />
             </button>
           </div>
         </div>
@@ -83,25 +95,25 @@ export default function IssueDetail({ anomalyId, onClose }) {
             <>
               <Skeleton variant="heading" />
               <Skeleton variant="text" count={4} />
-              <Skeleton variant="chart" />
+              <Skeleton variant="card" height={120} />
             </>
           ) : error ? (
             <ErrorState title="Couldn't load issue" message={error} onRetry={fetchDetail} />
           ) : detail && (
             <>
               {/* What was flagged */}
-              <div className="issue-detail__section">
+              <div className="issue-detail__section glass-subtle">
                 <div className="issue-detail__section-title">What was flagged</div>
                 <div className="issue-detail__flagged">
                   {detail.anomaly_data?.flagged_sensors?.map((sensor) => (
                     <div key={sensor} className="issue-detail__flagged-item">
                       <div>
                         <div className="issue-detail__flagged-name">{friendlyJointName(sensor)}</div>
-                        <div className="issue-detail__flagged-value">
+                        <div className="issue-detail__flagged-value font-mono">
                           {formatValue(detail.anomaly_data.sensor_values_at_flag?.[sensor])} Nm
                         </div>
                       </div>
-                      <div className="issue-detail__flagged-deviation">
+                      <div className="issue-detail__flagged-deviation font-mono">
                         {formatValue(detail.anomaly_data.deviation_magnitude?.[sensor])}σ above normal
                       </div>
                     </div>
@@ -110,11 +122,11 @@ export default function IssueDetail({ anomalyId, onClose }) {
               </div>
 
               {/* Diagnosis */}
-              <div className="issue-detail__section">
-                <div className="issue-detail__section-title">Diagnosis</div>
+              <div className="issue-detail__section glass-subtle">
+                <div className="issue-detail__section-title">Diagnosis & Root Cause</div>
                 <div className="issue-detail__diagnosis-text">{detail.diagnosis?.text}</div>
                 {detail.diagnosis?.confidence && (
-                  <div className="issue-detail__confidence">
+                  <div className="issue-detail__confidence font-mono">
                     Confidence: {Math.round(detail.diagnosis.confidence * 100)}%
                   </div>
                 )}
@@ -129,7 +141,7 @@ export default function IssueDetail({ anomalyId, onClose }) {
 
               {/* Conversation */}
               <div className="issue-detail__section">
-                <div className="issue-detail__section-title">Conversation</div>
+                <div className="issue-detail__section-title">Technician Conversation</div>
                 <div className="issue-detail__conversation">
                   <Chatbot messages={chatMessages} readOnly title="Conversation transcript" />
                 </div>
@@ -137,8 +149,8 @@ export default function IssueDetail({ anomalyId, onClose }) {
 
               {/* Outcome */}
               {detail.feedback && (
-                <div className="issue-detail__section">
-                  <div className="issue-detail__section-title">Outcome</div>
+                <div className="issue-detail__section glass-subtle">
+                  <div className="issue-detail__section-title">Verified Outcome</div>
                   <div className={`issue-detail__outcome ${detail.feedback.outcome === 'corrected' ? 'issue-detail__outcome--corrected' : ''}`}>
                     <div className="issue-detail__outcome-label">
                       {detail.feedback.outcome === 'confirmed' ? 'Diagnosis confirmed' : 'Diagnosis corrected'}
@@ -146,14 +158,14 @@ export default function IssueDetail({ anomalyId, onClose }) {
                     {detail.feedback.confirmed_cause && (
                       <div className="issue-detail__outcome-cause">{detail.feedback.confirmed_cause}</div>
                     )}
-                    <div className="issue-detail__outcome-time">{formatTimestamp(detail.feedback.ts)}</div>
+                    <div className="issue-detail__outcome-time font-mono">{formatTimestamp(detail.feedback.ts)}</div>
                   </div>
                 </div>
               )}
             </>
           )}
         </div>
-      </div>
+      </motion.div>
     </>
   );
 }

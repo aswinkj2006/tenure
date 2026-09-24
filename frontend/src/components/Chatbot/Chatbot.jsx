@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, MessageCircle, ChevronDown } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Send, MessageCircle, Sparkles } from 'lucide-react';
 import MessageBubble from './MessageBubble';
 import FeedbackControls from './FeedbackControls';
 import './Chatbot.css';
@@ -17,7 +18,6 @@ export default function Chatbot({
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
-  // Auto-scroll to bottom on new messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isLoading]);
@@ -30,48 +30,58 @@ export default function Chatbot({
   };
 
   return (
-    <div className={`chatbot ${readOnly ? 'chatbot--readonly' : ''}`}>
+    <div className={`chatbot glass-strong ${readOnly ? 'chatbot--readonly' : ''}`}>
       {/* Header */}
       <div className="chatbot__header">
-        <span className="chatbot__title">{title}</span>
+        <div className="chatbot__header-left">
+          <span className="chatbot__title">{title}</span>
+        </div>
+        <Sparkles size={14} className="text-terracotta" />
       </div>
 
       {/* Messages */}
       <div className="chatbot__messages">
         {messages.length === 0 && !readOnly ? (
           <div className="chatbot__empty">
-            <MessageCircle className="chatbot__empty-icon" strokeWidth={1} />
+            <MessageCircle className="chatbot__empty-icon" strokeWidth={1.2} />
             <span className="chatbot__empty-text">
-              Ask me anything about this machine — sensor readings, diagnostics, maintenance tips.
+              Ask Tenure anything about telemetry anomalies, operating envelopes, or UR5e maintenance procedures.
             </span>
           </div>
         ) : (
-          messages.map((msg, i) => {
-            // Show feedback after the last assistant message that has citations
-            const showFeedback = !readOnly
-              && msg.role === 'assistant'
-              && msg.citations?.length > 0
-              && i === messages.length - 1;
+          <AnimatePresence initial={false}>
+            {messages.map((msg, i) => {
+              const showFeedback = !readOnly
+                && msg.role === 'assistant'
+                && msg.citations?.length > 0
+                && i === messages.length - 1;
 
-            return (
-              <MessageBubble
-                key={msg.id || i}
-                message={msg}
-                showFeedback={showFeedback}
-                feedbackControls={
-                  showFeedback ? (
-                    <FeedbackControls
-                      diagnosisId={msg.anomaly_id || 'diag-mock-001'}
-                      onSubmit={onFeedback}
-                    />
-                  ) : null
-                }
-              />
-            );
-          })
+              return (
+                <motion.div
+                  key={msg.id || i}
+                  initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <MessageBubble
+                    message={msg}
+                    showFeedback={showFeedback}
+                    feedbackControls={
+                      showFeedback ? (
+                        <FeedbackControls
+                          diagnosisId={msg.anomaly_id || 'diag-mock-001'}
+                          onSubmit={onFeedback}
+                        />
+                      ) : null
+                    }
+                  />
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
         )}
 
-        {/* Loading indicator */}
+        {/* Loading wave indicator */}
         {isLoading && (
           <div className="chatbot__loading">
             <div className="chatbot__loading-dot" />
@@ -83,9 +93,9 @@ export default function Chatbot({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input bar */}
+      {/* Input bar pinned */}
       {!readOnly && (
-        <form className="chatbot__input" onSubmit={handleSubmit}>
+        <form className="chatbot__input glass-subtle" onSubmit={handleSubmit}>
           <input
             ref={inputRef}
             type="text"
@@ -100,7 +110,7 @@ export default function Chatbot({
             disabled={!input.trim() || isLoading}
             aria-label="Send message"
           >
-            <Send size={18} strokeWidth={1.5} />
+            <Send size={16} strokeWidth={1.5} />
           </button>
         </form>
       )}

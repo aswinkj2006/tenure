@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { JointCard, TCPCard } from '../components/SensorCard/SensorCard';
 import AlertBanner from '../components/AlertBanner/AlertBanner';
 import RobotTwin from '../components/RobotTwin/RobotTwin';
 import BodyMap from '../components/BodyMap/BodyMap';
 import HealthTimeline from '../components/HealthTimeline/HealthTimeline';
+import JointHeatmap from '../components/JointHeatmap/JointHeatmap';
 import Chatbot from '../components/Chatbot/Chatbot';
 import Skeleton from '../components/common/Skeleton';
 import ErrorState from '../components/common/ErrorState';
@@ -14,7 +16,44 @@ import useChat from '../hooks/useChat';
 import useSensorStore from '../stores/sensorStore';
 import { getMachine } from '../api/client';
 import { healthLabel } from '../utils/format';
+import { staggerContainerVariants, itemFadeUpVariants } from '../utils/motion';
 import './MachinePage.css';
+
+/**
+ * Magnetic button wrapper for primary action
+ */
+function MagneticButton({ children, onClick, className }) {
+  const btnRef = useRef(null);
+
+  const handleMouseMove = (e) => {
+    const btn = btnRef.current;
+    if (!btn) return;
+    const rect = btn.getBoundingClientRect();
+    const x = e.clientX - rect.left - rect.width / 2;
+    const y = e.clientY - rect.top - rect.height / 2;
+    btn.style.transform = `translate(${x * 0.22}px, ${y * 0.22}px)`;
+  };
+
+  const handleMouseLeave = () => {
+    const btn = btnRef.current;
+    if (!btn) return;
+    btn.style.transform = 'translate(0px, 0px)';
+  };
+
+  return (
+    <button
+      ref={btnRef}
+      type="button"
+      className={className}
+      onClick={onClick}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{ transition: 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)' }}
+    >
+      {children}
+    </button>
+  );
+}
 
 export default function MachinePage() {
   const { id } = useParams();
@@ -29,9 +68,7 @@ export default function MachinePage() {
   const { messages, isLoading: chatLoading, send: sendMessage, submitFeedback, loadAnomalyContext } = useChat(machineId);
 
   const anomalyActive = useSensorStore((s) => s.anomalyActive);
-  const anomalyJoint = useSensorStore((s) => s.anomalyJoint);
 
-  // Fetch machine data
   const fetchMachine = async () => {
     try {
       setLoading(true);
@@ -49,14 +86,12 @@ export default function MachinePage() {
     fetchMachine();
   }, [machineId]);
 
-  // When alert fires, load context into chatbot
   useEffect(() => {
     if (activeAlert) {
       loadAnomalyContext(activeAlert);
     }
   }, [activeAlert, loadAnomalyContext]);
 
-  // Simulate anomaly: trigger sensor spike + alert
   const handleSimulateAnomaly = () => {
     simulateAnomaly(2); // Joint 3 (elbow)
     triggerMockAlert('joint_3_torque');
@@ -66,7 +101,6 @@ export default function MachinePage() {
     return <ErrorState title="Couldn't load machine" message={error} onRetry={fetchMachine} />;
   }
 
-  // Build hero text
   const heroText = anomalyActive || activeAlert
     ? 'Elbow joint is experiencing an unexpected torque spike. Automated diagnosis in progress.'
     : machine
@@ -78,12 +112,20 @@ export default function MachinePage() {
     : '';
 
   return (
-    <div className="machine-page">
+    <motion.div
+      variants={staggerContainerVariants}
+      initial="hidden"
+      animate="visible"
+      className="machine-page"
+    >
       {/* Alert banner */}
       <AlertBanner alert={activeAlert} onDismiss={dismissAlert} />
 
       {/* Status hero */}
-      <div className={`machine-hero ${anomalyActive ? 'machine-hero--anomaly' : ''}`}>
+      <motion.div
+        variants={itemFadeUpVariants}
+        className={`machine-hero glass glass-sheen ${anomalyActive ? 'machine-hero--anomaly' : ''}`}
+      >
         {loading ? (
           <Skeleton variant="heading" width="50%" />
         ) : (
@@ -92,8 +134,7 @@ export default function MachinePage() {
             <span>{heroSub}</span>
           </div>
         )}
-        
-        {/* Line art robot watermark */}
+
         <svg className="machine-hero__watermark" viewBox="0 0 120 120" fill="none" stroke="currentColor" strokeWidth="1.2">
           <path d="M20 100 L40 100 L50 80 L75 40 L95 50 L105 60" />
           <circle cx="50" cy="80" r="4" fill="currentColor" opacity="0.3" />
@@ -101,35 +142,37 @@ export default function MachinePage() {
           <circle cx="95" cy="50" r="3" fill="currentColor" opacity="0.3" />
           <path d="M105 60 L112 65 M105 60 L112 55" strokeWidth="1.5" />
         </svg>
-      </div>
+      </motion.div>
 
       {/* Dev controls */}
-      <div className="dev-controls">
+      <motion.div variants={itemFadeUpVariants} className="dev-controls glass-subtle">
         <div className="dev-controls__badge">
-          <span className="dev-controls__label">Test Simulation</span>
+          <span className="dev-controls__label font-mono">Telemetry Sim</span>
         </div>
-        <span className="dev-controls__text">Trigger a simulated collision / over-torque anomaly to verify 3D camera zoom, alerts & AI diagnosis</span>
-        <button
-          type="button"
+        <span className="dev-controls__text">
+          Trigger a simulated collision / over-torque anomaly to verify 3D camera zoom, alerts & AI diagnosis
+        </span>
+        <MagneticButton
           className="dev-controls__btn"
           onClick={handleSimulateAnomaly}
         >
           Simulate Anomaly
-        </button>
-      </div>
+        </MagneticButton>
+      </motion.div>
 
       {/* Primary 3D & Telemetry Grid */}
       <div className="machine-v2-grid">
-        {/* Left: 3D Digital Twin & 24h Timeline */}
-        <div className="machine-twin-col">
+        {/* Left: 3D Digital Twin & 24h Timelines */}
+        <motion.div variants={itemFadeUpVariants} className="machine-twin-col">
           <div className="machine-twin-wrapper">
             <RobotTwin />
           </div>
           <HealthTimeline />
-        </div>
+          <JointHeatmap />
+        </motion.div>
 
         {/* Right: Body Map & Joint Sensor Cards */}
-        <div className="machine-telemetry-col">
+        <motion.div variants={itemFadeUpVariants} className="machine-telemetry-col">
           <BodyMap />
 
           <div className="sensor-grid-v2">
@@ -154,11 +197,11 @@ export default function MachinePage() {
               </>
             )}
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Full-width Ask Tenure Chat Section */}
-      <div className="machine-chat-section">
+      <motion.div variants={itemFadeUpVariants} className="machine-chat-section">
         <Chatbot
           messages={messages}
           isLoading={chatLoading}
@@ -167,7 +210,7 @@ export default function MachinePage() {
           title="Ask Tenure — AI Machine Technician"
           placeholder="Ask questions about telemetry, operating limits, or maintenance history..."
         />
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

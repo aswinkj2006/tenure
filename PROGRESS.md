@@ -10,13 +10,16 @@ Repository initialized. Git branching strategy set up. Frontend spec and shared 
 
 ## Completed
 - [Phase 0] Project setup: git init, .gitignore, FRONTEND_SPEC.md, SHARED_CONTEXT.md, PROGRESS.md, branch strategy (main/backend/frontend)
-- [Frontend] Full Tenure v2 Frontend Application:
-  - 3D Digital Twin with 6-DOF UR5e Forward Kinematics (DH parameters) + Three.js/R3F
-  - Bento Layout Dashboard with embedded live twin, 24h overview chart, AI query suggestions
-  - Machine Telemetry Page with interactive 6-DOF Body Map, 24h health timeline, and sensor cards
-  - Real-time 20Hz Pick-and-Place trajectory & anomaly simulation engine
-  - Logs Page with multi-filter drawer, diagnosis citations, and CSV export
-  - Clean TypeScript/Vite production build verified with zero errors
+- [Frontend v2.0] Full Tenure Frontend with 3D Digital Twin, Bento Dashboard, Kinematic Body Map, Telemetry
+- [Frontend v2.1] Atmosphere & Motion Upgrade:
+  - Living mesh gradient ambient backdrop with floating dust particles & rotating parallax gear
+  - Frosted glass design system (`.glass`, `.glass-strong`, `.glass-subtle`, `.glass-sheen`)
+  - 3D Digital Twin postprocessing (subtle Bloom + Vignette) & torque energy pulses
+  - NumberFlow rolling numeric digits on telemetry cards, health score, and HUD badges
+  - 24h × 6-DOF Telemetry Heatmap Matrix with wave animations
+  - Cmd+K Command Palette (`cmdk`) for fast search, telemetry inspection, and anomaly triggers
+  - Sonner frosted glass toast alerts and Lenis smooth inertial scrolling
+  - "Reduce Effects" accessibility mode with auto performance fallback
 
 ## Decisions made
 - LLM: Gemini 2.5 Flash (primary + backup) — user preference, cost-effective

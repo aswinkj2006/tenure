@@ -7,15 +7,20 @@ export default function IssueRow({ issue, onClick }) {
   const dotStatus = severityToStatus(issue.severity);
 
   return (
-    <div className="issue-row" onClick={onClick} role="button" tabIndex={0}>
+    <div
+      className="issue-row glass glass-sheen"
+      onClick={onClick}
+      role="button"
+      tabIndex={0}
+    >
       <StatusDot className="issue-row__severity-dot" status={dotStatus} size="lg" />
 
       <div className="issue-row__content">
         <div className="issue-row__title">{issue.diagnosis_summary}</div>
-        <div className="issue-row__meta">
+        <div className="issue-row__meta font-mono">
           <span>{issue.machine_name}</span>
           <span className="issue-row__meta-separator">·</span>
-          <span>{issue.flagged_sensors?.map(s => s.replace(/_/g, ' ')).join(', ')}</span>
+          <span>{issue.flagged_sensors?.map((s) => s.replace(/_/g, ' ')).join(', ')}</span>
         </div>
       </div>
 
@@ -25,7 +30,7 @@ export default function IssueRow({ issue, onClick }) {
         {issue.outcome && <Badge variant={issue.outcome}>{issue.outcome}</Badge>}
       </div>
 
-      <div className="issue-row__time">{relativeTime(issue.timestamp)}</div>
+      <div className="issue-row__time font-mono">{relativeTime(issue.timestamp)}</div>
     </div>
   );
 }

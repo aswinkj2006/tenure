@@ -1,7 +1,9 @@
-import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Cpu, FileText } from 'lucide-react';
+import { NavLink, useLocation } from 'react-router-dom';
+import { LayoutDashboard, Cpu, FileText, Command } from 'lucide-react';
+import { motion } from 'framer-motion';
 import StatusDot from '../common/StatusDot';
 import useSensorStore from '../../stores/sensorStore';
+import { SPRING_INTERACTIVE } from '../../utils/motion';
 import './Sidebar.css';
 
 /* Inline SVG gear logo mark */
@@ -31,37 +33,64 @@ const navItems = [
 
 export default function Sidebar() {
   const connected = useSensorStore((s) => s.connected);
+  const location = useLocation();
+
+  const handleOpenCmd = () => {
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }));
+  };
 
   return (
-    <aside className="sidebar">
+    <aside className="sidebar glass-strong">
       {/* Logo */}
       <div className="sidebar__logo">
         <LogoMark />
         <span className="sidebar__logo-text">Tenure</span>
       </div>
 
-      {/* Navigation */}
+      {/* Navigation with shared layout pill */}
       <nav className="sidebar__nav">
-        {navItems.map(({ to, label, icon: Icon }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={to === '/'}
-            className={({ isActive }) =>
-              `sidebar__link ${isActive ? 'sidebar__link--active' : ''}`
-            }
-          >
-            <Icon className="sidebar__link-icon" strokeWidth={1.5} />
-            {label}
-          </NavLink>
-        ))}
+        {navItems.map(({ to, label, icon: Icon }) => {
+          const isActive = to === '/' ? location.pathname === '/' : location.pathname.startsWith(to);
+
+          return (
+            <NavLink
+              key={to}
+              to={to}
+              end={to === '/'}
+              className={`sidebar__link ${isActive ? 'sidebar__link--active' : ''}`}
+            >
+              {isActive && (
+                <motion.div
+                  layoutId="sidebarActivePill"
+                  className="sidebar__active-pill"
+                  transition={SPRING_INTERACTIVE}
+                />
+              )}
+              <Icon className="sidebar__link-icon" strokeWidth={1.5} />
+              <span className="sidebar__link-label">{label}</span>
+            </NavLink>
+          );
+        })}
       </nav>
 
-      {/* Sim connection status */}
+      {/* Footer with Command Shortcut & Connection Indicator */}
       <div className="sidebar__footer">
+        <button
+          type="button"
+          className="sidebar__cmd-btn glass-subtle"
+          onClick={handleOpenCmd}
+          title="Open Command Palette (Cmd+K)"
+        >
+          <div className="sidebar__cmd-content">
+            <Command size={13} />
+            <span>Search menu</span>
+          </div>
+          <kbd className="sidebar__cmd-kbd font-mono">⌘K</kbd>
+        </button>
+
         <div className="sidebar__status">
           <StatusDot status={connected ? 'ok' : 'offline'} pulse={connected} />
-          {connected ? 'Sim live' : 'Sim standby'}
+          <span>{connected ? 'Telemetry live' : 'Telemetry standby'}</span>
         </div>
       </div>
     </aside>

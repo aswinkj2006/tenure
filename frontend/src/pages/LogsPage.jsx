@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import FilterBar from '../components/FilterBar/FilterBar';
 import IssueRow from '../components/IssueRow/IssueRow';
 import IssueDetail from '../components/IssueDetail/IssueDetail';
@@ -6,6 +7,7 @@ import Skeleton from '../components/common/Skeleton';
 import EmptyState from '../components/common/EmptyState';
 import ErrorState from '../components/common/ErrorState';
 import { getLogs } from '../api/client';
+import { staggerContainerVariants, itemFadeUpVariants } from '../utils/motion';
 import './LogsPage.css';
 
 export default function LogsPage() {
@@ -37,9 +39,14 @@ export default function LogsPage() {
   const openCount = issues.filter((i) => i.status === 'open').length;
 
   return (
-    <div className="logs-page">
+    <motion.div
+      variants={staggerContainerVariants}
+      initial="hidden"
+      animate="visible"
+      className="logs-page"
+    >
       {/* Hero */}
-      <div className="logs-hero">
+      <motion.div variants={itemFadeUpVariants} className="logs-hero glass glass-sheen">
         <div className="logs-hero__text">
           {openCount > 0
             ? `${openCount} issue${openCount > 1 ? 's' : ''} still open.`
@@ -53,20 +60,22 @@ export default function LogsPage() {
           <circle cx="48" cy="48" r="6" fill="currentColor" opacity="0.2" />
           <path d="M48 12v10M48 74v10M12 48h10M74 48h10M20 20l7 7M69 69l7 7M20 76l7-7M69 27l7-7" />
         </svg>
-      </div>
+      </motion.div>
 
       {/* Filters */}
-      <FilterBar filters={filters} onChange={setFilters} />
+      <motion.div variants={itemFadeUpVariants}>
+        <FilterBar filters={filters} onChange={setFilters} />
+      </motion.div>
 
       {/* Issue count */}
       {!loading && !error && (
-        <div className="logs-count">
+        <motion.div variants={itemFadeUpVariants} className="logs-count font-mono">
           Showing {issues.length} of {total} issues
-        </div>
+        </motion.div>
       )}
 
-      {/* Issue list */}
-      <div className="logs-list">
+      {/* Issue list with AnimatePresence */}
+      <motion.div variants={itemFadeUpVariants} className="logs-list">
         {loading ? (
           Array.from({ length: 4 }).map((_, i) => (
             <Skeleton key={i} variant="card" height={80} />
@@ -79,23 +88,35 @@ export default function LogsPage() {
             message="Try adjusting your filters, or check back later."
           />
         ) : (
-          issues.map((issue) => (
-            <IssueRow
-              key={issue.anomaly_id}
-              issue={issue}
-              onClick={() => setSelectedId(issue.anomaly_id)}
-            />
-          ))
+          <AnimatePresence mode="popLayout">
+            {issues.map((issue) => (
+              <motion.div
+                key={issue.anomaly_id}
+                layout
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.98 }}
+                transition={{ duration: 0.2 }}
+              >
+                <IssueRow
+                  issue={issue}
+                  onClick={() => setSelectedId(issue.anomaly_id)}
+                />
+              </motion.div>
+            ))}
+          </AnimatePresence>
         )}
-      </div>
+      </motion.div>
 
-      {/* Detail drawer */}
-      {selectedId && (
-        <IssueDetail
-          anomalyId={selectedId}
-          onClose={() => setSelectedId(null)}
-        />
-      )}
-    </div>
+      {/* Detail drawer with AnimatePresence */}
+      <AnimatePresence>
+        {selectedId && (
+          <IssueDetail
+            anomalyId={selectedId}
+            onClose={() => setSelectedId(null)}
+          />
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }

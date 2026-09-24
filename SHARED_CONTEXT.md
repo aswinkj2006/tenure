@@ -11,7 +11,7 @@ Last updated: 2026-09-25T00:50:00+05:30
 | Area | Status | Owner |
 |------|--------|-------|
 | Backend services | Not started | Backend dev (Aswin) |
-| Frontend UI | Completed (v2 - 3D Digital Twin, Bento Dashboard, Kinematic Body Map, Telemetry) | Frontend dev |
+| Frontend UI | Completed (v2.1 Atmosphere & Motion: Living backdrop, Frosted glass system, 3D Bloom/Vignette, Cmd+K palette, NumberFlow digits, 6-DOF Heatmap) | Frontend dev |
 | ProtoTwin sim | Not started | Backend dev (Aswin) |
 | Integration | Ready on frontend side | Both |
 

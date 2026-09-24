@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { Clock, ArrowUpRight, Sparkles } from 'lucide-react';
+import NumberFlow from '@number-flow/react';
 import HealthScore from '../components/HealthScore/HealthScore';
 import RobotTwin from '../components/RobotTwin/RobotTwin';
 import Chatbot from '../components/Chatbot/Chatbot';
@@ -12,6 +14,7 @@ import useChat from '../hooks/useChat';
 import useSensors from '../hooks/useSensors';
 import { getMachines, getDashboardSummary } from '../api/client';
 import { relativeTime, healthToStatus } from '../utils/format';
+import { staggerContainerVariants, itemFadeUpVariants } from '../utils/motion';
 import './Dashboard.css';
 
 export default function Dashboard() {
@@ -22,7 +25,7 @@ export default function Dashboard() {
   const [error, setError] = useState(null);
   const [pinnedCharts, setPinnedCharts] = useState([]);
 
-  // Initialize sensors hook to drive the 3D twin stream
+  // Initialize sensors hook to drive the 3D twin telemetry
   useSensors('ur5e-001');
 
   const { messages, isLoading: chatLoading, send: sendMessage } = useChat(null);
@@ -52,7 +55,6 @@ export default function Dashboard() {
     await sendMessage(text);
   };
 
-  // Check messages for chart_data and add to pinned
   useEffect(() => {
     const lastMsg = messages[messages.length - 1];
     if (lastMsg?.chart_data) {
@@ -77,7 +79,6 @@ export default function Dashboard() {
     ? `${summary.active_alerts} machine${summary.active_alerts > 1 ? 's' : ''} need${summary.active_alerts === 1 ? 's' : ''} attention.`
     : 'Everything looks healthy across your industrial fleet.';
 
-  // Default Overview Fleet Chart
   const defaultFleetChart = {
     chart_type: 'area',
     title: 'Fleet Average Torque Load — 24h Baseline',
@@ -103,9 +104,14 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="dashboard">
+    <motion.div
+      variants={staggerContainerVariants}
+      initial="hidden"
+      animate="visible"
+      className="dashboard"
+    >
       {/* Hero */}
-      <div className="dashboard-hero">
+      <motion.div variants={itemFadeUpVariants} className="dashboard-hero glass glass-sheen">
         {loading ? (
           <Skeleton variant="heading" width="60%" />
         ) : (
@@ -121,47 +127,54 @@ export default function Dashboard() {
           <circle cx="48" cy="48" r="6" fill="currentColor" opacity="0.2" />
           <path d="M48 12v10M48 74v10M12 48h10M74 48h10M20 20l7 7M69 69l7 7M20 76l7-7M69 27l7-7" />
         </svg>
-      </div>
+      </motion.div>
 
-      {/* Fleet stats */}
-      <div className="fleet-stats">
+      {/* Fleet stats with NumberFlow */}
+      <motion.div variants={itemFadeUpVariants} className="fleet-stats">
         {loading ? (
           Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="fleet-stat">
+            <div key={i} className="fleet-stat glass">
               <Skeleton variant="text" width="60%" />
               <Skeleton variant="value" />
             </div>
           ))
         ) : (
           <>
-            <div className="fleet-stat">
+            <div className="fleet-stat glass glass-sheen">
               <span className="fleet-stat__label">Machines Online</span>
-              <span className="fleet-stat__value">{summary?.machines_online || 1} / {summary?.total_machines || 1}</span>
-            </div>
-            <div className="fleet-stat">
-              <span className="fleet-stat__label">Active alerts</span>
-              <span className={`fleet-stat__value ${summary?.active_alerts > 0 ? 'fleet-stat__value--critical' : 'fleet-stat__value--ok'}`}>
-                {summary?.active_alerts || 0}
+              <span className="fleet-stat__value font-mono">
+                <NumberFlow value={summary?.machines_online || 1} /> / <NumberFlow value={summary?.total_machines || 1} />
               </span>
             </div>
-            <div className="fleet-stat">
-              <span className="fleet-stat__label">Fleet Health</span>
-              <span className="fleet-stat__value">{summary?.avg_health_score?.toFixed(1) || '94.2'}%</span>
+            <div className="fleet-stat glass glass-sheen">
+              <span className="fleet-stat__label">Active alerts</span>
+              <span className={`fleet-stat__value font-mono ${summary?.active_alerts > 0 ? 'fleet-stat__value--critical' : 'fleet-stat__value--ok'}`}>
+                <NumberFlow value={summary?.active_alerts || 0} />
+              </span>
             </div>
-            <div className="fleet-stat">
+            <div className="fleet-stat glass glass-sheen">
+              <span className="fleet-stat__label">Fleet Health</span>
+              <span className="fleet-stat__value font-mono">
+                <NumberFlow
+                  value={summary?.avg_health_score || 94.2}
+                  format={{ minimumFractionDigits: 1, maximumFractionDigits: 1 }}
+                />%
+              </span>
+            </div>
+            <div className="fleet-stat glass glass-sheen">
               <span className="fleet-stat__label">Issues today</span>
-              <span className="fleet-stat__value">
-                {summary?.issues_last_24h || 0}
+              <span className="fleet-stat__value font-mono">
+                <NumberFlow value={summary?.issues_last_24h || 0} />
               </span>
             </div>
           </>
         )}
-      </div>
+      </motion.div>
 
       {/* Bento Grid */}
       <div className="dashboard-bento-grid">
         {/* Machine Card with Compact Live 3D Twin */}
-        <div className="bento-card bento-machine-twin-card">
+        <motion.div variants={itemFadeUpVariants} className="bento-card bento-machine-twin-card glass glass-sheen">
           <div className="bento-card-header">
             <div>
               <span className="bento-card-category">Active Digital Twin</span>
@@ -169,7 +182,7 @@ export default function Dashboard() {
             </div>
             <button
               type="button"
-              className="bento-action-btn"
+              className="bento-action-btn glass-subtle"
               onClick={() => navigate('/machine/ur5e-001')}
             >
               <span>Inspect Telemetry</span>
@@ -194,17 +207,17 @@ export default function Dashboard() {
                     <div className="bento-meta-sub">Universal Robots 6-DOF Manipulator</div>
                   </div>
                 </div>
-                <div className="bento-meta-right">
+                <div className="bento-meta-right font-mono">
                   <Clock size={13} />
                   <span>Last issue {relativeTime(m.last_anomaly_at)}</span>
                 </div>
               </div>
             ))}
           </div>
-        </div>
+        </motion.div>
 
         {/* Fleet Overview Chart */}
-        <div className="bento-card bento-chart-card">
+        <motion.div variants={itemFadeUpVariants} className="bento-card bento-chart-card">
           <div className="bento-card-header">
             <div>
               <span className="bento-card-category">Telemetry Overview</span>
@@ -212,10 +225,10 @@ export default function Dashboard() {
             </div>
           </div>
           <DynamicChart chartData={defaultFleetChart} />
-        </div>
+        </motion.div>
 
         {/* AI Suggestions & Pinned Charts */}
-        <div className="bento-card bento-pinned-card">
+        <motion.div variants={itemFadeUpVariants} className="bento-card bento-pinned-card glass glass-sheen">
           <div className="bento-card-header">
             <div>
               <span className="bento-card-category">AI Queries</span>
@@ -229,7 +242,7 @@ export default function Dashboard() {
               <button
                 key={idx}
                 type="button"
-                className="dashboard-query-chip"
+                className="dashboard-query-chip glass-subtle"
                 onClick={() => handleSend(chip)}
               >
                 <span>{chip}</span>
@@ -246,10 +259,10 @@ export default function Dashboard() {
               ))}
             </div>
           )}
-        </div>
+        </motion.div>
 
         {/* Fleet Chatbot */}
-        <div className="bento-card bento-chat-card">
+        <motion.div variants={itemFadeUpVariants} className="bento-card bento-chat-card">
           <Chatbot
             messages={messages}
             isLoading={chatLoading}
@@ -257,8 +270,8 @@ export default function Dashboard() {
             title="Ask Tenure — Fleet AI"
             placeholder="Ask questions about your fleet or maintenance manuals..."
           />
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }
