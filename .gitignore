@@ -1,0 +1,66 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Node / React
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+.next/
+*.tsbuildinfo
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Data / Models (large files)
+data/docs/*.pdf
+data/models/
+*.onnx
+*.pt
+*.bin
+*.safetensors
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Vector DB data
+qdrant_storage/
+chroma_data/
+
+# ProtoTwin project files (binary, large)
+sim/prototwin_project/*.ptw
+
+# Logs
+*.log
+logs/
+
+# Coverage
+htmlcov/
+.coverage
