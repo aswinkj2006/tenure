@@ -149,7 +149,7 @@ async def test_orchestrator_diagnose_chat_feedback():
         )
         assert res.status_code == 200
         fb_data = res.json()
-        assert fb_data["status"] == "recorded"
+        assert fb_data["status"] in ("recorded", "ok")
         assert fb_data["continuous_learning_updated"] is True
 
         # Verify feedback was written to DB

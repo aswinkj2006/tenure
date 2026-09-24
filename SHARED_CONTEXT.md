@@ -2,7 +2,7 @@
 
 > **Both frontend and backend developers: read this file before every work session.** Update it after every commit that changes the integration surface (APIs, data shapes, ports, environment, decisions).
 
-Last updated: 2026-09-25T01:21:00+05:30
+Last updated: 2026-09-25T02:02:00+05:30
 
 ---
 
@@ -10,10 +10,10 @@ Last updated: 2026-09-25T01:21:00+05:30
 
 | Area | Status | Owner |
 |------|--------|-------|
-| Backend services | Phase 1 & 2 Complete (Anomaly + Alert services ready) | Backend dev (Aswin) |
-| Frontend UI | Not started (spec ready in FRONTEND_SPEC.md) | Frontend dev |
-| ProtoTwin sim | Mock sim & Connect wrapper complete | Backend dev (Aswin) |
-| Integration | Sensor WS (8001) & Alert WS (8002) ready for UI | Both |
+| Backend services | Phases 1, 2, 3, 5, 6 Complete (All endpoints operational & tested) | Backend dev (Aswin) |
+| Frontend UI | In progress / ready for integration (spec in FRONTEND_SPEC.md) | Frontend dev |
+| ProtoTwin sim | Live ProtoTwin (port 8084) calibrated + sinusoidal fallback | Backend dev (Aswin) |
+| Integration | All REST + WebSocket contracts live on ports 8000, 8001, 8002, 8003 | Both |
 
 ---
 
@@ -25,7 +25,7 @@ Last updated: 2026-09-25T01:21:00+05:30
 
 | Service | Port | Status | Available Endpoints |
 |---------|------|--------|---------------------|
-| Orchestrator | 8000 | Ready | `POST /diagnose`, `POST /chat`, `POST /feedback`, `GET /health` |
+| Orchestrator | 8000 | Ready | `GET /machines`, `GET /machines/{id}`, `GET /dashboard/summary`, `GET /fleet/overview`, `GET /logs`, `GET /logs/{id}`, `GET /logs/export/csv`, `GET /logs/export/pdf/{id}`, `POST /diagnose`, `POST /chat` (supports chart intent), `POST /feedback`, `GET /health` |
 | Anomaly Service | 8001 | Ready | `ws://localhost:8001/ws/sensors/{machine_id}`, `GET /sensors/{machine_id}/latest`, `GET /sensors/{machine_id}/history`, `GET /anomalies/{machine_id}`, `POST /inject-anomaly`, `POST /clear-anomaly` |
 | Alert Service | 8002 | Ready | `ws://localhost:8002/ws/alerts/{machine_id}`, `GET /alerts/{machine_id}`, `POST /alerts`, `POST /alerts/{id}/acknowledge`, `POST /alerts/{id}/resolve` |
 | RAG Service | 8003 | Ready | `POST /ingest` (multipart upload), `POST /retrieve`, `GET /documents/{machine_id}`, `GET /health` |
@@ -38,6 +38,8 @@ Last updated: 2026-09-25T01:21:00+05:30
 |------|--------|--------------------|-------------|-----------------|
 | 2026-09-25 | Added anomaly query endpoint | `GET /anomalies/{machine_id}` (port 8001) | Aswin | Frontend can fetch past anomalies on load |
 | 2026-09-25 | Added demo injection triggers | `POST /inject-anomaly`, `POST /clear-anomaly` (port 8001) | Aswin | Frontend dev can trigger anomalies directly from UI buttons for testing |
+| 2026-09-25 | Added Audit Logs, CSV/PDF Exports, Fleet Overview | `GET /logs`, `GET /logs/{id}`, `GET /logs/export/csv`, `GET /logs/export/pdf/{id}`, `GET /dashboard/summary`, `GET /machines` | Aswin | Full backend support for Logs page and Fleet Dashboard |
+| 2026-09-25 | Added Chatbot Chart Intent detection | `POST /chat` (port 8000) | Aswin | Chat responses now include structured `chart_data` when users ask for sensor trends/plots |
 
 
 ---
