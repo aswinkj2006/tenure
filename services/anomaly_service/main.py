@@ -12,8 +12,10 @@ Port: 8001
 
 import asyncio
 import json
+import os
 import sys
 import time
+
 import uuid
 from contextlib import asynccontextmanager
 
@@ -27,8 +29,9 @@ from fastapi.middleware.cors import CORSMiddleware
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from sim.client import MockProtoTwinClient, SensorReading
+from sim.client import MockProtoTwinClient, ProtoTwinClient, SensorReading
 from db.init_db import get_connection, init_db
+
 from services.anomaly_service.detector import AnomalyDetector
 import httpx
 
@@ -73,15 +76,33 @@ async def lifespan(app: FastAPI):
     init_db()
     print("[anomaly_service] Database initialized.")
 
-    # Start the mock sim client
-    sim_client = MockProtoTwinClient(machine_id="ur5e-001", step_interval=0.1)
-    await sim_client.connect()
+    # Check if real ProtoTwin is active or requested
+    use_mock = os.getenv("USE_MOCK_SIM", "false").lower() == "true" or "pytest" in sys.modules
+    sim_client = None
+
+    if not use_mock:
+        try:
+            real_client = ProtoTwinClient(machine_id="ur5e-001")
+            await real_client.connect()
+            if real_client._running:
+                sim_client = real_client
+                print("[anomaly_service] Connected to LIVE ProtoTwin simulation model!")
+        except Exception as e:
+            print(f"[anomaly_service] Could not connect to live ProtoTwin: {e}")
+
+    # Fallback to mock if ProtoTwin is not connected
+    if sim_client is None:
+        sim_client = MockProtoTwinClient(machine_id="ur5e-001", step_interval=0.1)
+        await sim_client.connect()
+        print("[anomaly_service] Using synthetic Mock ProtoTwin client.")
+
 
     # Start the background sensor streaming task
     _sensor_task = asyncio.create_task(_sensor_stream_loop())
     print("[anomaly_service] Sensor streaming started.")
 
     yield
+
 
     # Shutdown
     if _sensor_task:
@@ -313,13 +334,21 @@ async def inject_anomaly(
     value: float = 185.0,
 ):
     """
-    Inject an anomaly into the mock simulation.
-    Development/demo endpoint — allows triggering anomalies from the frontend.
+    Inject an anomaly into the live simulation (real ProtoTwin or mock).
     """
-    if not sim_client or not isinstance(sim_client, MockProtoTwinClient):
-        raise HTTPException(status_code=400, detail="Anomaly injection only available in mock mode")
+    if not sim_client:
+        raise HTTPException(status_code=400, detail="Simulation client not connected")
 
-    sim_client.inject_anomaly(joint=joint, anomaly_type=anomaly_type, magnitude=value)
+    if isinstance(sim_client, MockProtoTwinClient):
+        sim_client.inject_anomaly(joint=joint, anomaly_type=anomaly_type, magnitude=value)
+    elif isinstance(sim_client, ProtoTwinClient):
+        from sim.inject_anomaly import get_signal_address
+        try:
+            addr = get_signal_address(joint, anomaly_type)
+            sim_client.write_signal(addr, value)
+            await sim_client.step()
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed writing to ProtoTwin signal: {e}")
 
     return {
         "status": "injected",
@@ -333,11 +362,14 @@ async def inject_anomaly(
 @app.post("/clear-anomaly")
 async def clear_anomaly():
     """Clear any injected anomaly."""
-    if not sim_client or not isinstance(sim_client, MockProtoTwinClient):
-        raise HTTPException(status_code=400, detail="Only available in mock mode")
+    if not sim_client:
+        raise HTTPException(status_code=400, detail="Simulation client not connected")
 
-    sim_client.clear_anomaly()
+    if isinstance(sim_client, MockProtoTwinClient):
+        sim_client.clear_anomaly()
+
     return {"status": "cleared"}
+
 
 
 # ──────────────────────────────────────────────────────────

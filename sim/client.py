@@ -134,14 +134,28 @@ class ProtoTwinClient:
         self._running = False
 
     async def connect(self):
-        """Connect to ProtoTwin and load the model."""
+        """Connect to ProtoTwin: attaches to running instance on port 8084 or loads model."""
         import prototwin
 
+        # 1. Attempt to attach to already running ProtoTwin instance
+        try:
+            self._client = await prototwin.attach(port=8084)
+            if self._client:
+                await self._client.sync()
+                cnt = int(self._client.count())
+                self._running = True
+                print(f"[prototwin] Attached to running ProtoTwin model! ({cnt} signals active)")
+                return
+        except Exception as e:
+            print(f"[prototwin] Could not attach to port 8084: {e}. Trying start...")
+
+        # 2. Start ProtoTwinConnect process
         self._client = await prototwin.start()
-        await self._client.load(self.model_path)
-        await self._client.initialize()
+        if self.model_path and Path(self.model_path).exists():
+            await self._client.load(self.model_path)
+            await self._client.initialize()
+            print(f"[prototwin] Connected and loaded model: {self.model_path}")
         self._running = True
-        print(f"[prototwin] Connected and loaded model: {self.model_path}")
 
     async def disconnect(self):
         """Stop the simulation."""
@@ -155,8 +169,17 @@ class ProtoTwinClient:
             raise RuntimeError("Not connected to ProtoTwin. Call connect() first.")
 
         values = {}
+        total_signals = int(self._client.count()) if hasattr(self._client, "count") else 0
+
         for name, addr in ALL_SENSOR_ADDRESSES.items():
-            values[name] = self._client.get(addr)
+            if addr < total_signals:
+                try:
+                    val = self._client.get(addr)
+                    values[name] = float(val) if isinstance(val, (int, float, bool)) else 0.0
+                except Exception:
+                    values[name] = 0.0
+            else:
+                values[name] = 0.0
         return values
 
     def write_signal(self, address: int, value: float):
@@ -164,6 +187,7 @@ class ProtoTwinClient:
         if not self._client:
             raise RuntimeError("Not connected to ProtoTwin. Call connect() first.")
         self._client.set(address, value)
+
 
     async def step(self):
         """Advance the simulation by one timestep."""
