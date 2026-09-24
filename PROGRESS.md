@@ -20,7 +20,7 @@ Repository initialized. Git branching strategy set up. Frontend spec and shared 
 - Frontend dev: scaffold React app from FRONTEND_SPEC.md
 
 ## Decisions made
-- LLM: Gemini 2.5 Flash (primary + backup) — user preference, cost-effective
+- LLM: Gemini 3.6 Flash (primary), Gemini 3.7 Flash (backup) — user preference, cost-effective
 - Frontend/backend split: separate branches, merge via PR, clean directory boundaries
 - UR5e docs: user will add manually during demo to show real-time onboarding (not pre-bundled)
 - DB: SQLite for hackathon simplicity

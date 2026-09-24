@@ -43,7 +43,7 @@ Last updated: 2026-09-25T00:50:00+05:30
 
 | # | Decision | Reason | Date | Who |
 |---|----------|--------|------|-----|
-| 1 | LLM: Gemini 2.5 Flash (primary), Gemini 2.5 Flash as backup | Cost-effective, fast, good quality | 2026-09-25 | Aswin |
+| 1 | LLM: Gemini 3.6 Flash (primary), Gemini 3.7 Flash as backup | Cost-effective, fast, good quality | 2026-09-25 | Aswin |
 | 2 | Frontend and backend in separate branches, merge via PR | Clean separation, parallel development | 2026-09-25 | Aswin |
 | 3 | UR5e docs added manually by user during demo (not pre-bundled) | Demonstrates real-time onboarding flow | 2026-09-25 | Aswin |
 
@@ -74,8 +74,8 @@ See FRONTEND_SPEC.md for full library recommendations
 ```env
 # Backend
 GEMINI_API_KEY=<your-key>
-LLM_MODEL=gemini-2.5-flash
-LLM_BACKUP_MODEL=gemini-2.5-flash
+LLM_MODEL=gemini-3.6-flash
+LLM_BACKUP_MODEL=gemini-3.7-flash
 VECTOR_DB=qdrant  # or chroma
 DATABASE_URL=sqlite:///./tenure.db
 
