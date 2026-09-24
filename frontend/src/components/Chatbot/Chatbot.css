@@ -1,0 +1,397 @@
+/* ============================================
+   Tenure — Chatbot Component
+   "Ask Tenure" panel with message bubbles,
+   citation chips, and feedback controls
+   ============================================ */
+
+.chatbot {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--blush);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  height: 100%;
+  min-height: 400px;
+  max-height: 600px;
+  overflow: hidden;
+}
+
+/* ── Header ── */
+.chatbot__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--blush);
+  flex-shrink: 0;
+}
+
+.chatbot__title {
+  font-family: var(--font-heading);
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  color: var(--charcoal);
+}
+
+.chatbot__toggle {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  color: var(--text-tertiary);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.chatbot__toggle:hover {
+  background: var(--blush-light);
+  color: var(--charcoal);
+}
+
+/* ── Messages area ── */
+.chatbot__messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.chatbot__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: var(--space-3);
+  text-align: center;
+  padding: var(--space-8);
+}
+
+.chatbot__empty-icon {
+  width: 40px;
+  height: 40px;
+  color: var(--terracotta);
+  opacity: 0.2;
+}
+
+.chatbot__empty-text {
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+  max-width: 220px;
+}
+
+/* ── Message bubble ── */
+.message {
+  display: flex;
+  flex-direction: column;
+  max-width: 85%;
+  animation: fade-in-up var(--duration-normal) var(--ease-out) both;
+}
+
+.message--user {
+  align-self: flex-end;
+}
+
+.message--assistant {
+  align-self: flex-start;
+}
+
+.message--system {
+  align-self: center;
+  max-width: 90%;
+}
+
+.message__bubble {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-inner);
+  font-size: var(--text-base);
+  line-height: 1.6;
+  word-break: break-word;
+}
+
+.message--user .message__bubble {
+  background: var(--blush-light);
+  color: var(--charcoal);
+  border-bottom-right-radius: var(--radius-sm);
+}
+
+.message--assistant .message__bubble {
+  background: var(--surface);
+  border: 1px solid var(--blush);
+  color: var(--charcoal);
+  border-bottom-left-radius: var(--radius-sm);
+}
+
+.message--system .message__bubble {
+  background: var(--warn-bg);
+  border: 1px solid var(--warn-border);
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  text-align: center;
+  border-radius: var(--radius-pill);
+  padding: var(--space-2) var(--space-4);
+}
+
+.message--error .message__bubble {
+  background: var(--critical-bg);
+  border-color: var(--critical-border);
+}
+
+.message__time {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  margin-top: var(--space-1);
+  padding: 0 var(--space-1);
+}
+
+.message--user .message__time {
+  text-align: right;
+}
+
+/* ── Citations ── */
+.message__citations {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.citation-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-2);
+  background: var(--blush-light);
+  border: 1px solid var(--blush);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.citation-chip:hover {
+  background: var(--blush);
+  color: var(--charcoal);
+}
+
+.citation-chip__icon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+.citation-chip__page {
+  color: var(--text-tertiary);
+}
+
+/* Citation expanded popup */
+.citation-expanded {
+  margin-top: var(--space-2);
+  padding: var(--space-3);
+  background: var(--blush-light);
+  border: 1px solid var(--blush);
+  border-radius: var(--radius-inner);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: 1.5;
+  animation: fade-in-up 150ms var(--ease-out) both;
+}
+
+.citation-expanded__source {
+  font-weight: var(--weight-medium);
+  color: var(--charcoal);
+  margin-bottom: var(--space-1);
+  font-size: var(--text-xs);
+}
+
+/* ── Feedback controls ── */
+.feedback-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--blush);
+}
+
+.feedback-controls__label {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  margin-right: var(--space-2);
+}
+
+.feedback-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.feedback-btn--confirm {
+  background: var(--ok-bg);
+  color: var(--ok);
+  border: 1px solid var(--ok-border);
+}
+
+.feedback-btn--confirm:hover {
+  background: var(--ok);
+  color: white;
+}
+
+.feedback-btn--correct {
+  background: var(--high-bg);
+  color: var(--high);
+  border: 1px solid var(--high-border);
+}
+
+.feedback-btn--correct:hover {
+  background: var(--high);
+  color: white;
+}
+
+.feedback-btn--done {
+  background: var(--blush-light);
+  color: var(--text-secondary);
+  border: 1px solid var(--blush);
+  cursor: default;
+}
+
+/* Correct inline input */
+.feedback-input {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  animation: fade-in-up 150ms var(--ease-out) both;
+}
+
+.feedback-input input {
+  flex: 1;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--blush);
+  border-radius: var(--radius-inner);
+  font-size: var(--text-sm);
+  background: var(--surface);
+  outline: none;
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+
+.feedback-input input:focus {
+  border-color: var(--terracotta);
+}
+
+.feedback-input button {
+  padding: var(--space-2) var(--space-4);
+  background: var(--terracotta);
+  color: white;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  border-radius: var(--radius-inner);
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.feedback-input button:hover {
+  background: var(--rust);
+}
+
+/* ── Input bar ── */
+.chatbot__input {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  border-top: 1px solid var(--blush);
+  flex-shrink: 0;
+}
+
+.chatbot__input input {
+  flex: 1;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--blush);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-base);
+  background: var(--bg);
+  outline: none;
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+
+.chatbot__input input:focus {
+  border-color: var(--terracotta);
+}
+
+.chatbot__input input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.chatbot__send {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--terracotta);
+  color: white;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.chatbot__send:hover {
+  background: var(--rust);
+  transform: scale(1.05);
+}
+
+.chatbot__send:disabled {
+  background: var(--blush);
+  color: var(--text-tertiary);
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ── Loading dots ── */
+.chatbot__loading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  align-self: flex-start;
+}
+
+.chatbot__loading-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--blush);
+  border-radius: 50%;
+  animation: loading-bounce 1.4s ease-in-out infinite both;
+}
+
+.chatbot__loading-dot:nth-child(2) { animation-delay: 0.16s; }
+.chatbot__loading-dot:nth-child(3) { animation-delay: 0.32s; }
+
+@keyframes loading-bounce {
+  0%, 80%, 100% {
+    transform: scale(0.6);
+    opacity: 0.4;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ── Read-only mode (for logs detail) ── */
+.chatbot--readonly .chatbot__input {
+  display: none;
+}
+
+.chatbot--readonly .chatbot__header {
+  border-bottom: none;
+}

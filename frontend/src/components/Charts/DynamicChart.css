@@ -1,0 +1,58 @@
+/* ============================================
+   Tenure — Dynamic Chart Component
+   Recharts wrapper for pinnable charts
+   ============================================ */
+
+.dynamic-chart {
+  background: var(--surface);
+  border: 1px solid var(--blush);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-5) var(--space-6);
+}
+
+.dynamic-chart__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+.dynamic-chart__title {
+  font-family: var(--font-heading);
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  color: var(--charcoal);
+}
+
+.dynamic-chart__pin {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  background: var(--blush-light);
+  border: 1px solid var(--blush);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.dynamic-chart__pin:hover {
+  background: var(--blush);
+  color: var(--charcoal);
+}
+
+.dynamic-chart__pin--pinned {
+  background: var(--terracotta);
+  border-color: var(--terracotta);
+  color: white;
+}
+
+.dynamic-chart__pin--pinned:hover {
+  background: var(--rust);
+}
+
+.dynamic-chart__body {
+  height: 200px;
+}

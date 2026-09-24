@@ -1,0 +1,56 @@
+/* ============================================
+   Tenure — Logs Page
+   Issue history with filters + detail drawer
+   ============================================ */
+
+.logs-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.logs-hero {
+  padding: var(--space-6);
+  background: var(--surface);
+  border: 1px solid var(--blush);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  position: relative;
+  overflow: hidden;
+}
+
+.logs-hero__text {
+  font-family: var(--font-heading);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  color: var(--charcoal);
+}
+
+.logs-hero__sub {
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+  margin-top: var(--space-2);
+}
+
+.logs-hero__watermark {
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  width: 120px;
+  height: 120px;
+  color: var(--terracotta);
+  opacity: 0.06;
+  pointer-events: none;
+}
+
+.logs-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.logs-count {
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+  padding: 0 var(--space-1);
+}

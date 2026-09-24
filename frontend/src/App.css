@@ -1,0 +1,17 @@
+/* ============================================
+   Tenure — App Layout
+   Sidebar + TopBar + content area
+   ============================================ */
+
+.app {
+  display: flex;
+  min-height: 100vh;
+}
+
+.app__content {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  margin-top: var(--topbar-height);
+  padding: var(--space-8);
+  max-width: calc(100vw - var(--sidebar-width));
+}

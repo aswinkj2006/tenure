@@ -1,0 +1,68 @@
+/* ============================================
+   Tenure — Issue Row Component
+   Soft card per issue in log list
+   ============================================ */
+
+.issue-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  background: var(--surface);
+  border: 1px solid var(--blush);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.issue-row:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+.issue-row__severity-dot {
+  flex-shrink: 0;
+}
+
+.issue-row__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.issue-row__title {
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  color: var(--charcoal);
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.issue-row__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.issue-row__meta-separator {
+  color: var(--blush);
+}
+
+.issue-row__badges {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.issue-row__time {
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  flex-shrink: 0;
+}

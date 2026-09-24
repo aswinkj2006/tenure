@@ -1,0 +1,95 @@
+/* ============================================
+   Tenure — Sidebar Component
+   Slim left navigation with Fraunces logo
+   ============================================ */
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--sidebar-width);
+  height: 100vh;
+  background: var(--surface);
+  border-right: 1px solid var(--blush);
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  padding: var(--space-6) var(--space-4);
+}
+
+/* ── Logo ── */
+.sidebar__logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-8);
+}
+
+.sidebar__logo-icon {
+  width: 28px;
+  height: 28px;
+  color: var(--terracotta);
+  flex-shrink: 0;
+}
+
+.sidebar__logo-text {
+  font-family: var(--font-heading);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-bold);
+  color: var(--charcoal);
+  letter-spacing: -0.02em;
+}
+
+/* ── Navigation ── */
+.sidebar__nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  flex: 1;
+}
+
+.sidebar__link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-3);
+  border-radius: var(--radius-inner);
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  color: var(--text-secondary);
+  transition: all var(--duration-fast) var(--ease-out);
+  text-decoration: none;
+}
+
+.sidebar__link:hover {
+  background: var(--blush-light);
+  color: var(--charcoal);
+}
+
+.sidebar__link--active {
+  background: var(--blush-light);
+  color: var(--charcoal);
+  font-weight: var(--weight-semibold);
+}
+
+.sidebar__link-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+/* ── Footer (sim status) ── */
+.sidebar__footer {
+  padding: var(--space-3);
+  border-top: 1px solid var(--blush);
+  margin-top: auto;
+}
+
+.sidebar__status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+}
