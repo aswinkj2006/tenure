@@ -2,7 +2,7 @@
 
 > **Both frontend and backend developers: read this file before every work session.** Update it after every commit that changes the integration surface (APIs, data shapes, ports, environment, decisions).
 
-Last updated: 2026-09-25T00:50:00+05:30
+Last updated: 2026-09-25T01:21:00+05:30
 
 ---
 
@@ -10,10 +10,10 @@ Last updated: 2026-09-25T00:50:00+05:30
 
 | Area | Status | Owner |
 |------|--------|-------|
-| Backend services | Not started | Backend dev (Aswin) |
-| Frontend UI | Not started | Frontend dev |
-| ProtoTwin sim | Not started | Backend dev (Aswin) |
-| Integration | Not started | Both |
+| Backend services | Phase 1 & 2 Complete (Anomaly + Alert services ready) | Backend dev (Aswin) |
+| Frontend UI | Not started (spec ready in FRONTEND_SPEC.md) | Frontend dev |
+| ProtoTwin sim | Mock sim & Connect wrapper complete | Backend dev (Aswin) |
+| Integration | Sensor WS (8001) & Alert WS (8002) ready for UI | Both |
 
 ---
 
@@ -23,19 +23,21 @@ Last updated: 2026-09-25T00:50:00+05:30
 
 ### Service Ports (current)
 
-| Service | Port | Status |
-|---------|------|--------|
-| Orchestrator | 8000 | Not running |
-| Anomaly Service | 8001 | Not running |
-| Alert Service | 8002 | Not running |
-| RAG Service | 8003 | Not running |
-| Frontend (Vite) | 5173 | Not running |
+| Service | Port | Status | Available Endpoints |
+|---------|------|--------|---------------------|
+| Orchestrator | 8000 | In progress (Phase 3) | `/diagnose`, `/chat`, `/feedback` (coming next) |
+| Anomaly Service | 8001 | Ready | `ws://localhost:8001/ws/sensors/{machine_id}`, `GET /sensors/{machine_id}/latest`, `GET /sensors/{machine_id}/history`, `GET /anomalies/{machine_id}`, `POST /inject-anomaly`, `POST /clear-anomaly` |
+| Alert Service | 8002 | Ready | `ws://localhost:8002/ws/alerts/{machine_id}`, `GET /alerts/{machine_id}`, `POST /alerts`, `POST /alerts/{id}/acknowledge`, `POST /alerts/{id}/resolve` |
+| RAG Service | 8003 | In progress (Phase 3) | `/ingest`, `/retrieve` (coming next) |
+| Frontend (Vite) | 5173 | Not running | — |
 
 ### API Changes Log
 
 | Date | Change | Affected Endpoints | Who Changed | Frontend Impact |
 |------|--------|--------------------|-------------|-----------------|
-| — | (none yet) | — | — | — |
+| 2026-09-25 | Added anomaly query endpoint | `GET /anomalies/{machine_id}` (port 8001) | Aswin | Frontend can fetch past anomalies on load |
+| 2026-09-25 | Added demo injection triggers | `POST /inject-anomaly`, `POST /clear-anomaly` (port 8001) | Aswin | Frontend dev can trigger anomalies directly from UI buttons for testing |
+
 
 ---
 
