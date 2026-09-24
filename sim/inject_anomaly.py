@@ -1,27 +1,30 @@
 """
-Tenure — Anomaly injection script for the UR5e simulation.
+Tenure — Anomaly Injection Tool for UR5e Simulation
 
-Manually triggers an anomaly by forcing out-of-range values on a
-specified joint. Works with both the real ProtoTwin client and the
-mock client for development.
+Manually triggers an anomaly by forcing out-of-range values on a specified joint.
+
+Execution Modes (automatic):
+  1. Live Service Mode: If `start_services.py` (or anomaly_service) is running on port 8001,
+     it calls the live REST API directly. This immediately triggers live WebSocket alerts.
+  2. Mock Standalone Mode: If no server is running, runs a standalone synthetic stream demo.
+  3. Real ProtoTwin Mode: Pass `--real` to write directly to a running ProtoTwin instance.
 
 Usage:
-    # Inject torque spike on joint 3 (mock mode for dev)
-    python sim/inject_anomaly.py --joint 3 --type torque --value 185.0 --mock
+  # Predefined scenario (injects into running service if up, otherwise runs mock):
+  .venv\\Scripts\\python.exe sim/inject_anomaly.py --scenario torque_spike
 
-    # Inject via real ProtoTwin
-    python sim/inject_anomaly.py --joint 3 --type torque --value 185.0
+  # Custom values:
+  .venv\\Scripts\\python.exe sim/inject_anomaly.py --joint 3 --type torque --value 188.0
 
-    # Clear anomaly after injection
-    python sim/inject_anomaly.py --clear --mock
+  # Clear active anomaly:
+  .venv\\Scripts\\python.exe sim/inject_anomaly.py --clear
 """
 
 import argparse
 import asyncio
 import sys
-import json
-import math
 from pathlib import Path
+import httpx
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -36,13 +39,12 @@ from sim.client import (
 )
 
 
-# Predefined anomaly scenarios for quick demo use
 SCENARIOS = {
     "torque_spike": {
         "description": "Joint 3 torque spike — exceeds UR5e rated maximum of 150 Nm",
         "joint": 3,
         "type": "torque",
-        "value": 185.0,
+        "value": 188.0,
     },
     "velocity_overshoot": {
         "description": "Joint 2 velocity overshoot — exceeds max angular velocity",
@@ -54,43 +56,33 @@ SCENARIOS = {
         "description": "Joint 5 position drift — outside expected motion envelope",
         "joint": 5,
         "type": "position",
-        "value": 4.5,  # significant drift from normal operating range
+        "value": 4.5,
     },
     "multi_joint_stress": {
-        "description": "Joints 1 and 2 simultaneous torque stress",
+        "description": "Joint 1 torque stress",
         "joint": 1,
         "type": "torque",
-        "value": 160.0,
+        "value": 168.0,
     },
 }
 
 
 def get_signal_address(joint: int, signal_type: str) -> int:
-    """Get the ProtoTwin signal address for a joint and signal type."""
     addr_map = {
         "torque": ADDR_JOINT_TORQUE,
         "velocity": ADDR_JOINT_VELOCITY,
         "position": ADDR_JOINT_POSITION,
     }
-
     if signal_type not in addr_map:
         raise ValueError(f"Unknown signal type: {signal_type}. Use: torque, velocity, position")
-
     key = f"joint_{joint}_{signal_type}"
-    addresses = addr_map[signal_type]
-
-    if key not in addresses:
-        raise ValueError(f"Unknown signal: {key}. Valid joints: 1-6")
-
-    return addresses[key]
+    return addr_map[signal_type][key]
 
 
 def get_normal_range(joint: int, signal_type: str) -> str:
-    """Get the normal operating range for a joint signal (for display)."""
     limits = UR5E_JOINT_LIMITS.get(f"joint_{joint}")
     if not limits:
         return "unknown"
-
     if signal_type == "position":
         lo, hi = limits["position"]
         return f"[{lo:.2f}, {hi:.2f}] rad"
@@ -101,42 +93,71 @@ def get_normal_range(joint: int, signal_type: str) -> str:
     return "unknown"
 
 
+def try_live_service_inject(joint: int, signal_type: str, value: float) -> bool:
+    """Attempts to inject the anomaly directly into the running Anomaly Service on port 8001."""
+    try:
+        with httpx.Client(timeout=1.5) as client:
+            res = client.get("http://localhost:8001/health")
+            if res.status_code == 200:
+                post_res = client.post(
+                    f"http://localhost:8001/inject-anomaly?joint={joint}&anomaly_type={signal_type}&value={value}"
+                )
+                if post_res.status_code == 200:
+                    data = post_res.json()
+                    print("\n" + "=" * 60)
+                    print("  [LIVE INJECTION] Sent to Running Anomaly Service (Port 8001)")
+                    print("=" * 60)
+                    print(f"  Target:        joint_{joint}_{signal_type}")
+                    print(f"  Injected Val:  {value}")
+                    print(f"  Normal Range:  {get_normal_range(joint, signal_type)}")
+                    print(f"  Server Msg:    {data.get('message')}")
+                    print("=" * 60)
+                    print("[+] Live telemetry stream updated. Check alert service (8002) and UI.")
+                    return True
+    except Exception:
+        pass
+    return False
+
+
+def try_live_service_clear() -> bool:
+    """Attempts to clear anomalies on the running Anomaly Service on port 8001."""
+    try:
+        with httpx.Client(timeout=1.5) as client:
+            res = client.post("http://localhost:8001/clear-anomaly")
+            if res.status_code == 200:
+                print("\n[+] Cleared active anomaly on running Anomaly Service (Port 8001).")
+                return True
+    except Exception:
+        pass
+    return False
+
+
 async def inject_with_real_client(joint: int, signal_type: str, value: float, model_path: str):
     """Inject anomaly via real ProtoTwin connection."""
     client = ProtoTwinClient(model_path=model_path)
-    await client.connect()
+    try:
+        await client.connect()
+    except Exception as e:
+        print(f"\n[!] Could not connect to real ProtoTwin software: {e}")
+        print("[!] Tip: For local testing and dev, use the running service or mock mode.")
+        return
 
     addr = get_signal_address(joint, signal_type)
-    normal_range = get_normal_range(joint, signal_type)
-
-    print(f"\n{'='*60}")
-    print(f"  ANOMALY INJECTION")
-    print(f"{'='*60}")
-    print(f"  Joint:        {joint}")
-    print(f"  Signal:       {signal_type}")
-    print(f"  Value:        {value}")
-    print(f"  Normal range: {normal_range}")
-    print(f"  Address:      {addr}")
-    print(f"{'='*60}\n")
-
+    print(f"[inject] Writing joint_{joint}_{signal_type} = {value} (addr {addr}) to ProtoTwin...")
     client.write_signal(addr, value)
-    await client.step()  # Advance one step so the value takes effect
-
-    print(f"[inject] Written joint_{joint}_{signal_type} = {value} to ProtoTwin.")
-    print(f"[inject] The anomaly detection service should flag this on the next read.")
-
+    await client.step()
+    print("[inject] Value applied to simulation.")
     await client.disconnect()
 
 
 async def inject_with_mock(joint: int, signal_type: str, value: float):
-    """Inject anomaly and stream data to show the effect."""
+    """Standalone mock anomaly demonstration."""
     client = MockProtoTwinClient(step_interval=0.1)
     await client.connect()
 
     normal_range = get_normal_range(joint, signal_type)
-
     print(f"\n{'='*60}")
-    print(f"  MOCK ANOMALY INJECTION")
+    print(f"  STANDALONE MOCK ANOMALY STREAM DEMO")
     print(f"{'='*60}")
     print(f"  Joint:        {joint}")
     print(f"  Signal:       {signal_type}")
@@ -145,54 +166,43 @@ async def inject_with_mock(joint: int, signal_type: str, value: float):
     print(f"{'='*60}\n")
 
     step = 0
-    async for reading in client.stream_sensors(max_steps=50):
-        # Inject at step 20
-        if step == 20:
+    async for reading in client.stream_sensors(max_steps=35):
+        if step == 10:
             client.inject_anomaly(joint=joint, anomaly_type=signal_type, magnitude=value)
             print(f"\n  >>> ANOMALY INJECTED at step {step} <<<\n")
-
-        # Clear at step 40
-        if step == 40:
+        if step == 25:
             client.clear_anomaly()
             print(f"\n  >>> ANOMALY CLEARED at step {step} <<<\n")
 
-        # Print the relevant sensor
         key = f"joint_{joint}_{signal_type}"
         val = reading.sensors.get(key, "N/A")
-        marker = " *** ANOMALOUS ***" if step >= 20 and step < 40 else ""
+        marker = " *** ANOMALOUS ***" if 10 <= step < 25 else ""
         print(f"  step={step:3d}  {key}={val}{marker}")
-
         step += 1
 
     await client.disconnect()
 
 
 def list_scenarios():
-    """Print all predefined anomaly scenarios."""
     print(f"\n{'='*60}")
-    print(f"  PREDEFINED ANOMALY SCENARIOS")
+    print("  PREDEFINED ANOMALY SCENARIOS")
     print(f"{'='*60}\n")
-
-    for name, scenario in SCENARIOS.items():
+    for name, s in SCENARIOS.items():
         print(f"  {name}:")
-        print(f"    {scenario['description']}")
-        print(f"    Joint: {scenario['joint']}, Type: {scenario['type']}, Value: {scenario['value']}")
-        print(f"    Normal range: {get_normal_range(scenario['joint'], scenario['type'])}")
-        print()
-
-    print(f"  Usage: python sim/inject_anomaly.py --scenario torque_spike --mock")
-    print()
+        print(f"    {s['description']}")
+        print(f"    Joint: {s['joint']}, Type: {s['type']}, Value: {s['value']}")
+        print(f"    Normal range: {get_normal_range(s['joint'], s['type'])}\n")
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Inject anomalies into the UR5e ProtoTwin simulation."
-    )
+    parser = argparse.ArgumentParser(description="Inject anomalies into UR5e simulation.")
     parser.add_argument("--joint", type=int, choices=[1, 2, 3, 4, 5, 6], help="Joint number (1-6)")
     parser.add_argument("--type", type=str, choices=["torque", "velocity", "position"], help="Signal type")
     parser.add_argument("--value", type=float, help="Anomalous value to inject")
     parser.add_argument("--scenario", type=str, choices=list(SCENARIOS.keys()), help="Use a predefined scenario")
-    parser.add_argument("--mock", action="store_true", help="Use mock client (no ProtoTwin needed)")
+    parser.add_argument("--clear", action="store_true", help="Clear currently injected anomaly")
+    parser.add_argument("--mock", action="store_true", help="Run standalone mock generator")
+    parser.add_argument("--real", action="store_true", help="Force direct connection to ProtoTwin desktop app")
     parser.add_argument("--model", type=str, default="sim/prototwin_project/UR5e.ptm", help="Path to ProtoTwin model")
     parser.add_argument("--list-scenarios", action="store_true", help="List predefined anomaly scenarios")
 
@@ -202,24 +212,37 @@ def main():
         list_scenarios()
         return
 
-    # Resolve scenario or manual params
+    if args.clear:
+        if try_live_service_clear():
+            return
+        print("[+] Anomaly cleared.")
+        return
+
+    # Resolve scenario or parameters
     if args.scenario:
         scenario = SCENARIOS[args.scenario]
         joint = scenario["joint"]
         signal_type = scenario["type"]
-        value = scenario["value"]
+        value = args.value if args.value is not None else scenario["value"]
     elif args.joint and args.type and args.value is not None:
         joint = args.joint
         signal_type = args.type
         value = args.value
     else:
-        parser.error("Provide either --scenario or all of --joint, --type, --value")
+        parser.error("Provide --scenario OR (--joint, --type, --value) OR --clear")
         return
 
-    if args.mock:
-        asyncio.run(inject_with_mock(joint, signal_type, value))
-    else:
+    # 1. If real ProtoTwin requested explicitly
+    if args.real:
         asyncio.run(inject_with_real_client(joint, signal_type, value, args.model))
+        return
+
+    # 2. Check if the live backend is running (port 8001)
+    if not args.mock and try_live_service_inject(joint, signal_type, value):
+        return
+
+    # 3. Otherwise run standalone mock
+    asyncio.run(inject_with_mock(joint, signal_type, value))
 
 
 if __name__ == "__main__":
