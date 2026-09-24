@@ -119,10 +119,10 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS for frontend dev server
+# CORS for frontend and digital twin web UI
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -183,7 +183,7 @@ async def _sensor_stream_loop():
                             ),
                         )
                         conn.commit()
-                        print(f"[anomaly_service] 🚨 Recorded anomaly {anomaly_id} ({anomaly_eval.severity}) for {machine_id}")
+                        print(f"[anomaly_service] [ANOMALY] Recorded anomaly {anomaly_id} ({anomaly_eval.severity}) for {machine_id}")
                 except Exception as e:
                     print(f"[anomaly_service] Failed to persist anomaly: {e}")
 

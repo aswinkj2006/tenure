@@ -130,7 +130,7 @@ async def create_alert(payload: AlertCreateRequest):
     safety_action = None
     if payload.severity in ("critical", "high"):
         safety_action = "EMERGENCY_STOP_TRIGGERED" if payload.severity == "critical" else "RATE_LIMIT_SLOWDOWN"
-        print(f"[alert_service] ⚠️ {payload.severity.upper()} alert on {payload.machine_id}: Executing {safety_action}")
+        print(f"[alert_service] [ALERT] {payload.severity.upper()} alert on {payload.machine_id}: Executing {safety_action}")
         alert_obj["safety_action"] = safety_action
 
     # 2. Broadcast via WebSocket

@@ -457,7 +457,7 @@ async def submit_feedback(payload: FeedbackRequest):
             chunks=[learned_chunk],
             doc_type="feedback",
         )
-        print(f"[orchestrator] 🧠 Continuous learning: Ingested technician correction into vector store!")
+        print(f"[orchestrator] [LEARNING] Continuous learning: Ingested technician correction into vector store!")
 
     return {
         "status": "ok",
