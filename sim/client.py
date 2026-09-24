@@ -30,57 +30,66 @@ from typing import AsyncGenerator
 # ──────────────────────────────────────────────────────────────
 # Signal address mapping for the UR5e model in ProtoTwin.
 #
-# Verified against the live UR5e model running in ProtoTwin Connect:
-# Stride is 7 signals per joint starting at address 2:
-#   [Base + 0] = Enabled (bool)
-#   [Base + 1] = Min limit (rad)
-#   [Base + 2] = Max limit (rad)
-#   [Base + 3] = Max effort / torque limit (Nm)
-#   [Base + 4] = Target position (rad)
-#   [Base + 5] = Actual position (rad)
-#   [Base + 6] = Actual velocity (rad/s)
+# Verified from live UR5e model signals in ProtoTwin Connect:
+# Stride is 7 signals per joint starting at motor_state (addr 2, 9, 16, 23, 30, 37):
+#   [Motor + 1] = target_position (3, 10, 17, 24, 31, 38)
+#   [Motor + 2] = target_velocity (4, 11, 18, 25, 32, 39)
+#   [Motor + 3] = force_limit (5, 12, 19, 26, 33, 40)
+#   [Motor + 4] = current_position (6, 13, 20, 27, 34, 41)
+#   [Motor + 5] = current_velocity (7, 14, 21, 28, 35, 42)
+#   [Motor + 6] = current_force/torque (8, 15, 22, 29, 36, 43)
 # ──────────────────────────────────────────────────────────────
 
 ADDR_SIM_TIME = 0
 
 # Joint positions (radians) — Actual feedback from physics engine
 ADDR_JOINT_POSITION = {
-    "joint_1_position": 7,
-    "joint_2_position": 14,
-    "joint_3_position": 21,
-    "joint_4_position": 28,
-    "joint_5_position": 35,
-    "joint_6_position": 42,
+    "joint_1_position": 6,
+    "joint_2_position": 13,
+    "joint_3_position": 20,
+    "joint_4_position": 27,
+    "joint_5_position": 34,
+    "joint_6_position": 41,
 }
 
 # Joint velocities (rad/s) — Actual feedback
 ADDR_JOINT_VELOCITY = {
-    "joint_1_velocity": 8,
-    "joint_2_velocity": 15,
-    "joint_3_velocity": 22,
-    "joint_4_velocity": 29,
-    "joint_5_velocity": 36,
-    "joint_6_velocity": 43,
+    "joint_1_velocity": 7,
+    "joint_2_velocity": 14,
+    "joint_3_velocity": 21,
+    "joint_4_velocity": 28,
+    "joint_5_velocity": 35,
+    "joint_6_velocity": 42,
+}
+
+# Joint torques (Nm) — Actual feedback force
+ADDR_JOINT_TORQUE = {
+    "joint_1_torque": 8,
+    "joint_2_torque": 15,
+    "joint_3_torque": 22,
+    "joint_4_torque": 29,
+    "joint_5_torque": 36,
+    "joint_6_torque": 43,
 }
 
 # Joint motor targets (commands)
 ADDR_MOTOR_TARGET = {
-    "joint_1_target": 6,
-    "joint_2_target": 13,
-    "joint_3_target": 20,
-    "joint_4_target": 27,
-    "joint_5_target": 34,
-    "joint_6_target": 41,
+    "joint_1_target": 3,
+    "joint_2_target": 10,
+    "joint_3_target": 17,
+    "joint_4_target": 24,
+    "joint_5_target": 31,
+    "joint_6_target": 38,
 }
 
-# Joint torques (calculated / motor effort)
-ADDR_JOINT_TORQUE = {
-    "joint_1_torque": 5,
-    "joint_2_torque": 12,
-    "joint_3_torque": 19,
-    "joint_4_torque": 26,
-    "joint_5_torque": 33,
-    "joint_6_torque": 40,
+# Joint force / torque limits
+ADDR_MOTOR_LIMIT = {
+    "joint_1_limit": 5,
+    "joint_2_limit": 12,
+    "joint_3_limit": 19,
+    "joint_4_limit": 26,
+    "joint_5_limit": 33,
+    "joint_6_limit": 40,
 }
 
 ADDR_TCP = {
@@ -173,6 +182,11 @@ class ProtoTwinClient:
         """Stop the simulation."""
         self._running = False
         if self._client:
+            try:
+                if hasattr(self._client, "_ws") and self._client._ws:
+                    await self._client._ws.close()
+            except Exception:
+                pass
             print("[prototwin] Disconnected.")
 
     def read_all_sensors(self) -> dict[str, float]:
@@ -181,16 +195,11 @@ class ProtoTwinClient:
             raise RuntimeError("Not connected to ProtoTwin. Call connect() first.")
 
         values = {}
-        total_signals = int(self._client.count()) if hasattr(self._client, "count") else 0
-
         for name, addr in ALL_SENSOR_ADDRESSES.items():
-            if addr < total_signals:
-                try:
-                    val = self._client.get(addr)
-                    values[name] = float(val) if isinstance(val, (int, float, bool)) else 0.0
-                except Exception:
-                    values[name] = 0.0
-            else:
+            try:
+                val = self._client.get(addr)
+                values[name] = float(val) if isinstance(val, (int, float, bool)) else 0.0
+            except Exception:
                 values[name] = 0.0
         return values
 
