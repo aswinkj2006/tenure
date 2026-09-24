@@ -27,63 +27,75 @@ from typing import AsyncGenerator
 # Format: { "signal_name": prototwin_signal_address }
 # ──────────────────────────────────────────────────────────────
 
-# Simulation time
+# ──────────────────────────────────────────────────────────────
+# Signal address mapping for the UR5e model in ProtoTwin.
+#
+# Verified against the live UR5e model running in ProtoTwin Connect:
+# Stride is 7 signals per joint starting at address 2:
+#   [Base + 0] = Enabled (bool)
+#   [Base + 1] = Min limit (rad)
+#   [Base + 2] = Max limit (rad)
+#   [Base + 3] = Max effort / torque limit (Nm)
+#   [Base + 4] = Target position (rad)
+#   [Base + 5] = Actual position (rad)
+#   [Base + 6] = Actual velocity (rad/s)
+# ──────────────────────────────────────────────────────────────
+
 ADDR_SIM_TIME = 0
 
-# Joint positions (radians) — 6 joints
+# Joint positions (radians) — Actual feedback from physics engine
 ADDR_JOINT_POSITION = {
-    "joint_1_position": 1,
-    "joint_2_position": 2,
-    "joint_3_position": 3,
-    "joint_4_position": 4,
-    "joint_5_position": 5,
-    "joint_6_position": 6,
+    "joint_1_position": 7,
+    "joint_2_position": 14,
+    "joint_3_position": 21,
+    "joint_4_position": 28,
+    "joint_5_position": 35,
+    "joint_6_position": 42,
 }
 
-# Joint velocities (rad/s) — 6 joints
+# Joint velocities (rad/s) — Actual feedback
 ADDR_JOINT_VELOCITY = {
-    "joint_1_velocity": 7,
-    "joint_2_velocity": 8,
-    "joint_3_velocity": 9,
-    "joint_4_velocity": 10,
-    "joint_5_velocity": 11,
-    "joint_6_velocity": 12,
+    "joint_1_velocity": 8,
+    "joint_2_velocity": 15,
+    "joint_3_velocity": 22,
+    "joint_4_velocity": 29,
+    "joint_5_velocity": 36,
+    "joint_6_velocity": 43,
 }
 
-# Joint torques (Nm) — 6 joints
-ADDR_JOINT_TORQUE = {
-    "joint_1_torque": 13,
-    "joint_2_torque": 14,
-    "joint_3_torque": 15,
-    "joint_4_torque": 16,
-    "joint_5_torque": 17,
-    "joint_6_torque": 18,
-}
-
-# TCP (Tool Center Point) position — (x, y, z) in meters
-ADDR_TCP = {
-    "tcp_x": 19,
-    "tcp_y": 20,
-    "tcp_z": 21,
-}
-
-# Motor target position addresses (for writing commands / injecting anomalies)
+# Joint motor targets (commands)
 ADDR_MOTOR_TARGET = {
-    "joint_1_target": 22,
-    "joint_2_target": 23,
-    "joint_3_target": 24,
-    "joint_4_target": 25,
-    "joint_5_target": 26,
-    "joint_6_target": 27,
+    "joint_1_target": 6,
+    "joint_2_target": 13,
+    "joint_3_target": 20,
+    "joint_4_target": 27,
+    "joint_5_target": 34,
+    "joint_6_target": 41,
 }
 
-# All readable signal addresses merged
+# Joint torques (calculated / motor effort)
+ADDR_JOINT_TORQUE = {
+    "joint_1_torque": 5,
+    "joint_2_torque": 12,
+    "joint_3_torque": 19,
+    "joint_4_torque": 26,
+    "joint_5_torque": 33,
+    "joint_6_torque": 40,
+}
+
+ADDR_TCP = {
+    "tcp_x": 0,
+    "tcp_y": 1,
+    "tcp_z": 2,
+}
+
+# All readable sensor signals
 ALL_SENSOR_ADDRESSES: dict[str, int] = {
     **ADDR_JOINT_POSITION,
     **ADDR_JOINT_VELOCITY,
     **ADDR_JOINT_TORQUE,
-    **ADDR_TCP,
 }
+
 
 # UR5e spec limits (from official documentation)
 UR5E_JOINT_LIMITS = {
