@@ -172,7 +172,12 @@ class ProtoTwinClient:
             )
             await ws.recv()
             self._client = ProtoClient(ws)
-            await self._client.sync()
+            try:
+                await self._client.initialize()
+                print("[prototwin] Subscriptions initialized via initialize()!")
+            except Exception as init_err:
+                print(f"[prototwin] initialize notice: {init_err}, falling back to sync()")
+                await self._client.sync()
             self._running = True
             print("[prototwin] Attached to running ProtoTwin model with persistent link (port 8084)!")
             return
@@ -180,11 +185,24 @@ class ProtoTwinClient:
             print(f"[prototwin] Could not attach directly: {e}. Trying fallback...")
 
         # 2. Start ProtoTwinConnect process
-        self._client = await prototwin.start()
-        if self.model_path and Path(self.model_path).exists():
-            await self._client.load(self.model_path)
+        connect_exe = r"C:\Program Files\ProtoTwin\Connect\ProtoTwinConnect.exe"
+        location = connect_exe if Path(connect_exe).exists() else "ProtoTwinConnect"
+        self._client = await prototwin.start(location=location)
+        ptm_candidates = [
+            self.model_path,
+            r"C:\Users\Aswin K J\Documents\ur5e.ptm",
+        ]
+        for p in ptm_candidates:
+            if p and Path(p).exists():
+                try:
+                    await self._client.load(str(p))
+                    print(f"[prototwin] Loaded model: {p}")
+                    break
+                except Exception as load_err:
+                    print(f"[prototwin] Could not load {p}: {load_err}")
+        if self._client:
             await self._client.initialize()
-            print(f"[prototwin] Connected and loaded model: {self.model_path}")
+            print("[prototwin] Connected and initialized signal tracking.")
         self._running = True
 
     async def disconnect(self):

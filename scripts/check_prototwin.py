@@ -63,8 +63,12 @@ async def stream_live_ur5e(port: int = 8084, rate_hz: float = 5.0):
             # Await handshake ready frame from ProtoTwin
             await ws.recv()
             client = Client(ws)
-            await client.sync()
-            print("[CONNECTED] Link established! Reading raw ProtoTwin memory buffers in real time.\n")
+            try:
+                await client.initialize()
+                print("[CONNECTED] Simulation initialized with active signals tracking!")
+            except Exception as e:
+                print(f"[CONNECTED] Link established (sync mode): {e}")
+                await client.sync()
             print(f"{'WALL CLOCK':<10} | {'SIM TIME':<10} | {'SIM STATE':<8} | {'J1 (Base)':<12} | {'J2 (Shoulder)':<12} | {'J3 (Elbow)':<12} | {'J4 (Wrist 1)':<12} | {'J5 (Wrist 2)':<12} | {'J6 (Wrist 3)':<12}")
             print("-" * 115)
 
