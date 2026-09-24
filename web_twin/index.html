@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tenure — UR5e Autonomous Digital Twin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  
+  <!-- Three.js + Loaders -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/ColladaLoader.js"></script>
+</head>
+<body>
+  <div id="canvas-container"></div>
+
+  <!-- Top Navigation Header -->
+  <header class="twin-header">
+    <div class="brand">
+      <div class="brand-logo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10" stroke="#06b6d4"/>
+          <path d="M12 6v6l4 2" stroke="#06b6d4"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="brand-title">TENURE <span>DIGITAL TWIN</span></h1>
+        <p class="brand-subtitle">UR5e 6-DOF Industrial Robotic Manipulator</p>
+      </div>
+    </div>
+
+    <div class="header-center">
+      <div class="status-chip active" id="connection-status">
+        <span class="pulsing-dot"></span>
+        <span id="status-text">CONNECTING TO STREAM...</span>
+      </div>
+      <div class="source-toggle">
+        <button class="source-btn active" id="btn-src-backend" title="Connect through Anomaly Microservice (Port 8001)">TENURE WS :8001</button>
+        <button class="source-btn" id="btn-src-direct" title="Connect directly to ProtoTwin (Port 8084)">PROTOTWIN :8084</button>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <div class="clock-display" id="clock-display">00:00:00 UTC</div>
+      <button class="header-btn" id="btn-reset-view" title="Reset Camera View">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+          <path d="M3 3v5h5"/>
+        </svg>
+        <span>Reset View</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Left Telemetry Panel: 6 Joints -->
+  <aside class="panel left-panel">
+    <div class="panel-header">
+      <h2>JOINT KINEMATICS</h2>
+      <span class="badge" id="telemetry-rate">10 Hz</span>
+    </div>
+
+    <div class="joint-cards-list" id="joints-container">
+      <!-- Generated dynamically in app.js -->
+    </div>
+  </aside>
+
+  <!-- Right Diagnostics & Tools Panel -->
+  <aside class="panel right-panel">
+    <div class="panel-header">
+      <h2>END EFFECTOR & SAFETY</h2>
+      <span class="badge badge-teal" id="safety-status">NOMINAL</span>
+    </div>
+
+    <!-- TCP Coordinates Card -->
+    <div class="metric-card">
+      <div class="metric-header">
+        <span class="metric-title">TOOL CENTER POINT (TCP)</span>
+        <span class="metric-unit">Coordinates in Base Frame</span>
+      </div>
+      <div class="tcp-grid">
+        <div class="tcp-cell">
+          <span class="axis-label x">X</span>
+          <span class="axis-value" id="tcp-x">0.000</span>
+          <span class="axis-unit">m</span>
+        </div>
+        <div class="tcp-cell">
+          <span class="axis-label y">Y</span>
+          <span class="axis-value" id="tcp-y">0.000</span>
+          <span class="axis-unit">m</span>
+        </div>
+        <div class="tcp-cell">
+          <span class="axis-label z">Z</span>
+          <span class="axis-value" id="tcp-z">0.000</span>
+          <span class="axis-unit">m</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Anomaly Indicator -->
+    <div class="alert-box" id="alert-banner" style="display: none;">
+      <div class="alert-icon">⚠️</div>
+      <div class="alert-content">
+        <div class="alert-title" id="alert-title">ANOMALY DETECTED</div>
+        <div class="alert-desc" id="alert-desc">Telemetry exceeded envelope limits.</div>
+      </div>
+    </div>
+
+    <!-- Camera Presets -->
+    <div class="camera-presets-card">
+      <span class="section-label">CAMERA PRESETS</span>
+      <div class="presets-grid">
+        <button class="preset-btn" data-cam="iso">Isometric</button>
+        <button class="preset-btn" data-cam="front">Front (XZ)</button>
+        <button class="preset-btn" data-cam="side">Side (YZ)</button>
+        <button class="preset-btn" data-cam="top">Top (XY)</button>
+        <button class="preset-btn" data-cam="tool">Tool Focus</button>
+      </div>
+    </div>
+
+    <!-- Visual Options -->
+    <div class="view-options-card">
+      <span class="section-label">VISUAL OPTIONS</span>
+      <div class="options-row">
+        <label class="toggle-control">
+          <input type="checkbox" id="toggle-grid" checked>
+          <span class="slider"></span>
+          <span class="label-text">Floor Grid</span>
+        </label>
+        <label class="toggle-control">
+          <input type="checkbox" id="toggle-shadows" checked>
+          <span class="slider"></span>
+          <span class="label-text">Soft Shadows</span>
+        </label>
+        <label class="toggle-control">
+          <input type="checkbox" id="toggle-wireframe">
+          <span class="slider"></span>
+          <span class="label-text">Wireframe</span>
+        </label>
+        <label class="toggle-control">
+          <input type="checkbox" id="toggle-axes" checked>
+          <span class="slider"></span>
+          <span class="label-text">Joint Axes</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Demo Controls -->
+    <div class="demo-controls-card">
+      <span class="section-label">SIMULATION TEST BENCH</span>
+      <div class="demo-btn-row">
+        <button class="demo-btn inject" id="btn-inject-anomaly">Inject Torque Spike</button>
+        <button class="demo-btn reset" id="btn-clear-anomaly">Clear Spike</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Bottom Floating HUD Bar -->
+  <div class="bottom-hud">
+    <div class="hud-item">
+      <span class="hud-label">SIMULATION TIME:</span>
+      <span class="hud-value" id="hud-sim-time">--</span>
+    </div>
+    <div class="hud-divider"></div>
+    <div class="hud-item">
+      <span class="hud-label">ACTIVE CLIENT:</span>
+      <span class="hud-value" id="hud-client-type">Live ProtoTwin Model</span>
+    </div>
+    <div class="hud-divider"></div>
+    <div class="hud-item">
+      <span class="hud-label">ARM REACH:</span>
+      <span class="hud-value">850 mm (Max Payload: 5.0 kg)</span>
+    </div>
+    <div class="hud-divider"></div>
+    <div class="hud-item">
+      <span class="hud-label">REPEATABILITY:</span>
+      <span class="hud-value">±0.03 mm</span>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

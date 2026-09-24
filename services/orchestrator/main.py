@@ -19,6 +19,8 @@ from typing import Any
 
 from fastapi import FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 # Add project root to path
@@ -72,6 +74,17 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ──────────────────────────────────────────────────────────
+# Digital Twin Web UI
+# ──────────────────────────────────────────────────────────
+web_twin_path = Path(__file__).parent.parent.parent / "web_twin"
+if web_twin_path.exists():
+    app.mount("/twin", StaticFiles(directory=str(web_twin_path), html=True), name="twin")
+
+    @app.get("/")
+    async def root_redirect():
+        return RedirectResponse(url="/twin/")
 
 vector_store = VectorStore()
 gemini_client = GeminiTechnicianClient()
