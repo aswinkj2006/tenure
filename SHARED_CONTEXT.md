@@ -25,11 +25,12 @@ Last updated: 2026-09-25T01:21:00+05:30
 
 | Service | Port | Status | Available Endpoints |
 |---------|------|--------|---------------------|
-| Orchestrator | 8000 | In progress (Phase 3) | `/diagnose`, `/chat`, `/feedback` (coming next) |
+| Orchestrator | 8000 | Ready | `POST /diagnose`, `POST /chat`, `POST /feedback`, `GET /health` |
 | Anomaly Service | 8001 | Ready | `ws://localhost:8001/ws/sensors/{machine_id}`, `GET /sensors/{machine_id}/latest`, `GET /sensors/{machine_id}/history`, `GET /anomalies/{machine_id}`, `POST /inject-anomaly`, `POST /clear-anomaly` |
 | Alert Service | 8002 | Ready | `ws://localhost:8002/ws/alerts/{machine_id}`, `GET /alerts/{machine_id}`, `POST /alerts`, `POST /alerts/{id}/acknowledge`, `POST /alerts/{id}/resolve` |
-| RAG Service | 8003 | In progress (Phase 3) | `/ingest`, `/retrieve` (coming next) |
+| RAG Service | 8003 | Ready | `POST /ingest` (multipart upload), `POST /retrieve`, `GET /documents/{machine_id}`, `GET /health` |
 | Frontend (Vite) | 5173 | Not running | — |
+
 
 ### API Changes Log
 

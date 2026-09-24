@@ -1,15 +1,21 @@
 # Tenure — Build Progress Log
 
-Last updated: 2026-09-25T01:21:00+05:30
+Last updated: 2026-09-25T01:27:00+05:30
 
 ## Current phase
-Phase 3 — RAG Store + Orchestrator
+Phase 4 — Core UI Integration & Demo Polish
 
 ## Status
-Phases 0, 1, and 2 are fully completed and verified with automated test suites passing.
-- Phase 1 (Simulation Foundation): ProtoTwin real & mock clients, anomaly injection CLI, SQLite schema & seed data, virtual environment and test harness.
-- Phase 2 (Zero-Shot Anomaly Detection & Alerts): Anomaly detection engine (domain envelopes + rolling Z-score), FastAPI streaming WebSocket at `/ws/sensors/{machine_id}`, Alert service at `/ws/alerts/{machine_id}` with severity tiering and automated safety actions, and persistence into `anomaly_records`.
-- Next: Phase 3 (RAG store document ingestion, Chroma vector store, and Gemini 3.6/3.7 Flash orchestrator).
+Phases 0, 1, 2, and 3 are fully completed, integrated, and verified with 12 automated tests passing.
+All 4 backend microservices (Orchestrator, Anomaly Service, Alert Service, RAG Service) are fully functional, providing:
+1. Real-time telemetry streaming over WebSocket (`ws://localhost:8001/ws/sensors/{machine_id}`)
+2. Zero-shot anomaly detection with physical domain limits and dynamic rolling Z-scores
+3. Alert lifecycle and safety tiering with WebSocket push (`ws://localhost:8002/ws/alerts/{machine_id}`)
+4. Multi-format real-time document onboarding (`POST /ingest` on 8003) and semantic search with source references
+5. Grounded AI technician diagnosis (`POST /diagnose` on 8000) using Gemini 3.6/3.7 Flash with citations
+6. Interactive technician chat (`POST /chat` on 8000) strictly grounded in manuals
+7. Continuous learning feedback loop (`POST /feedback` on 8000) where corrections are re-indexed into the vector store
+8. Unified runner `start_services.py` to start all backend services simultaneously
 
 ## Completed
 - [Phase 0] Project setup: git init, .gitignore, FRONTEND_SPEC.md, SHARED_CONTEXT.md, PROGRESS.md, branch strategy (main/backend/frontend)
@@ -23,15 +29,24 @@ Phases 0, 1, and 2 are fully completed and verified with automated test suites p
   - `services/anomaly_service/main.py`: FastAPI server streaming telemetry via WebSocket `/ws/sensors/{machine_id}`, evaluating anomalies, debouncing & persisting to `anomaly_records`, and dispatching to alert service
   - `services/alert_service/main.py`: Alert service with WebSocket push `/ws/alerts/{machine_id}`, severity tiering, automatic safety stop triggers, and lifecycle management (acknowledge/resolve)
   - `tests/test_phase2.py`: Automated test suite for physical envelope violations, alert service lifecycle, and end-to-end anomaly detection (4/4 passing)
+- [Phase 3] RAG Store + Orchestrator:
+  - `services/rag_service/store.py`: ChromaDB persistent vector store with machine-isolated collections and SQLite metadata mirroring
+  - `services/rag_service/extractor.py`: Multi-format text extraction (PDF, Markdown, TXT) and sliding-window chunking with source references
+  - `services/rag_service/main.py`: RAG FastAPI server on port 8003 (`/ingest`, `/retrieve`, `/documents/{machine_id}`)
+  - `services/orchestrator/gemini_client.py`: Gemini client (Gemini 3.6 Flash primary, 3.7 Flash backup) with strict citation enforcement and grounded fallback
+  - `services/orchestrator/main.py`: Orchestrator FastAPI server on port 8000 (`/diagnose`, `/chat`, `/feedback`)
+  - `data/sample_docs/UR5e_Service_Manual.md`: Sample UR5e documentation for live demo onboarding
+  - `scripts/demo_onboard_docs.py`: End-to-end demonstration script for real-time document onboarding
+  - `start_services.py`: Single runner script for launching all 4 backend microservices
+  - `tests/test_phase3.py`: Automated test suite for VectorStore, RAG service, Orchestrator diagnosis, chat, and continuous learning feedback loop (4/4 passing)
 
 ## In progress
-- Phase 3: RAG store setup (Chroma/embeddings) + real-time document onboarding endpoint + Gemini orchestrator for `/diagnose` and `/chat`.
+- Ready for Frontend Dev integration (all API contracts active and operational).
 
 ## Next steps
-- Build `services/rag_service/store.py` (Chroma vector store + sentence-transformers / Gemini embeddings)
-- Build `services/rag_service/main.py` (`/ingest` with live file upload & auto-chunking, `/retrieve`)
-- Build `services/orchestrator/main.py` (`/diagnose` with citations + `diagnoses` DB entry, `/chat` with cited responses)
-- Test Phase 3 end-to-end with real-time documentation ingestion demo flow
+- Share ready state with frontend developer (all endpoints up and tested).
+- Validate live frontend connection against running backend services (`start_services.py`).
+
 
 ## Decisions made
 - LLM: Gemini 3.6 Flash (primary), Gemini 3.7 Flash (backup) — user preference, cost-effective
