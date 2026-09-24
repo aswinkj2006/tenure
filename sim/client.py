@@ -158,17 +158,26 @@ class ProtoTwinClient:
         """Connect to ProtoTwin: attaches to running instance on port 8084 or loads model."""
         import prototwin
 
-        # 1. Attempt to attach to already running ProtoTwin instance
+        # 1. Attempt to attach to already running ProtoTwin instance with persistent link
         try:
-            self._client = await prototwin.attach(port=8084)
-            if self._client:
-                await self._client.sync()
-                cnt = int(self._client.count())
-                self._running = True
-                print(f"[prototwin] Attached to running ProtoTwin model! ({cnt} signals active)")
-                return
+            from websockets.legacy.client import connect as ws_connect
+            from prototwin.client import Client as ProtoClient
+
+            ws = await ws_connect(
+                "ws://localhost:8084",
+                compression=None,
+                user_agent_header="Python",
+                ping_interval=None,  # Crucial: ProtoTwin C++ backend does not handle WS pings
+                close_timeout=5,
+            )
+            await ws.recv()
+            self._client = ProtoClient(ws)
+            await self._client.sync()
+            self._running = True
+            print("[prototwin] Attached to running ProtoTwin model with persistent link (port 8084)!")
+            return
         except Exception as e:
-            print(f"[prototwin] Could not attach to port 8084: {e}. Trying start...")
+            print(f"[prototwin] Could not attach directly: {e}. Trying fallback...")
 
         # 2. Start ProtoTwinConnect process
         self._client = await prototwin.start()
