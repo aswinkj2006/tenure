@@ -50,6 +50,7 @@ export default function useSensors(machineId) {
   const prevAnglesRef = useRef([0, 0, 0, 0, 0, 0]);
   const startTimeRef = useRef(Date.now());
   const tickRef = useRef(null);
+  const lastUiUpdateRef = useRef(0);
 
   // Generate tick at 20Hz
   const generateTick = useCallback(() => {
@@ -67,12 +68,14 @@ export default function useSensors(machineId) {
     const newJointArray = [];
     const formattedSensors = {};
     const historyUpdates = {};
+    let hasAnomaly = false;
 
     for (let i = 0; i < 6; i++) {
       const key = `joint_${i + 1}`;
       const angle = angles[i];
       const vel = (angle - prevAngles[i]) / (TICK_INTERVAL / 1000);
       const isAnomalous = activeAnomalyIdx === i;
+      if (isAnomalous) hasAnomaly = true;
 
       // Realistic torque variation
       let torque = baseTorques[i] + Math.sin(angle) * 8 + Math.abs(vel) * 15 + (Math.random() - 0.5) * 1.5;
@@ -106,22 +109,26 @@ export default function useSensors(machineId) {
     };
     formattedSensors.tcp = tcpObj;
 
-    // Push into Zustand store for 60fps 3D twin
+    // Push into Zustand store for 60fps 3D twin (zero React re-render overhead)
     store.updateSensors({
       joints: newJointArray,
       tcp: { x: tcpPos.x, y: tcpPos.y, z: tcpPos.z },
     });
 
-    // Update React states for standard UI consumers
-    setSensors(formattedSensors);
-    setSensorHistory((prev) => {
-      const next = { ...prev };
-      Object.entries(historyUpdates).forEach(([k, v]) => {
-        const arr = next[k] ? [...next[k], v] : [];
-        next[k] = [...arr, v].slice(-HISTORY_LENGTH);
+    // Throttle React component tree re-renders to 5Hz (every 200ms) or immediately on anomaly
+    // to keep the entire UI buttery smooth without dropping 60fps 3D motion
+    if (now - lastUiUpdateRef.current >= 200 || hasAnomaly) {
+      lastUiUpdateRef.current = now;
+      setSensors(formattedSensors);
+      setSensorHistory((prev) => {
+        const next = { ...prev };
+        Object.entries(historyUpdates).forEach(([k, v]) => {
+          const arr = next[k] ? [...next[k], v] : [];
+          next[k] = [...arr, v].slice(-HISTORY_LENGTH);
+        });
+        return next;
       });
-      return next;
-    });
+    }
   }, []);
 
   const simulateAnomaly = useCallback((jointIdx = 2) => {

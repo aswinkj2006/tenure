@@ -21,13 +21,14 @@
   background-color: #FAF0EE;
 }
 
-/* Mesh gradient blobs */
+/* Mesh gradient blobs (hardware-accelerated GPU layer) */
 .mesh-blob {
   position: absolute;
   border-radius: 50%;
-  filter: blur(80px);
-  -webkit-filter: blur(80px);
-  will-change: transform, opacity;
+  filter: blur(48px);
+  -webkit-filter: blur(48px);
+  will-change: transform;
+  transform: translateZ(0);
   pointer-events: none;
 }
 

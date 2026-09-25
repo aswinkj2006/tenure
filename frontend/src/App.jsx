@@ -105,23 +105,29 @@ export default function App() {
     };
   }, [reduceEffects]);
 
-  // Global mouse tracking for .glass-sheen elements
+  // Global mouse tracking for .glass-sheen elements (optimized with RAF & event targeting)
   useEffect(() => {
     if (reduceEffects) return;
 
+    let rafId = null;
     const handlePointerMove = (e) => {
-      const sheens = document.querySelectorAll('.glass-sheen');
-      sheens.forEach((el) => {
-        const rect = el.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        el.style.setProperty('--mx', `${x}px`);
-        el.style.setProperty('--my', `${y}px`);
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        const target = e.target?.closest ? e.target.closest('.glass-sheen') : null;
+        if (target) {
+          const rect = target.getBoundingClientRect();
+          target.style.setProperty('--mx', `${e.clientX - rect.left}px`);
+          target.style.setProperty('--my', `${e.clientY - rect.top}px`);
+        }
       });
     };
 
     window.addEventListener('pointermove', handlePointerMove, { passive: true });
-    return () => window.removeEventListener('pointermove', handlePointerMove);
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
   }, [reduceEffects]);
 
   return (

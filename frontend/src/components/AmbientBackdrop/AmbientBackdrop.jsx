@@ -8,19 +8,27 @@ export default function AmbientBackdrop() {
   const anomalyActive = useSensorStore((s) => s.anomalyActive);
   const reduceEffects = useSensorStore((s) => s.reduceEffects);
 
-  // Parallax gear on mouse move
+  // Parallax gear on mouse move (RAF-throttled)
   useEffect(() => {
     if (reduceEffects) return;
 
+    let rafId = null;
     const handleMouseMove = (e) => {
-      if (!gearRef.current) return;
-      const xRatio = (e.clientX / window.innerWidth - 0.5) * 2;
-      const yRatio = (e.clientY / window.innerHeight - 0.5) * 2;
-      gearRef.current.style.transform = `translate(${xRatio * 12}px, ${yRatio * 12}px) rotate(${Date.now() * 0.003}deg)`;
+      if (rafId || !gearRef.current) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        if (!gearRef.current) return;
+        const xRatio = (e.clientX / window.innerWidth - 0.5) * 2;
+        const yRatio = (e.clientY / window.innerHeight - 0.5) * 2;
+        gearRef.current.style.transform = `translate(${xRatio * 12}px, ${yRatio * 12}px)`;
+      });
     };
 
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
   }, [reduceEffects]);
 
   // Subtle floating dust motes canvas

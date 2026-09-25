@@ -104,7 +104,8 @@ export default function RobotTwin({ compact = false, onJointClick }) {
         <Canvas
           className="twin-canvas"
           camera={{ position: [1.15, 0.9, 1.15], fov: 42 }}
-          dpr={reduceEffects ? 1 : [1, 2]}
+          dpr={reduceEffects ? 1 : [1, 1.5]}
+          gl={{ powerPreference: 'high-performance', antialias: true }}
           shadows
         >
           {/* Lighting */}
@@ -118,7 +119,7 @@ export default function RobotTwin({ compact = false, onJointClick }) {
             position={[2.5, 4.5, 2]}
             intensity={1.2}
             castShadow
-            shadow-mapSize={[1024, 1024]}
+            shadow-mapSize={[512, 512]}
             shadow-bias={-0.0001}
           />
           <directionalLight
@@ -131,11 +132,12 @@ export default function RobotTwin({ compact = false, onJointClick }) {
           <FloorDisc />
           <ContactShadows
             position={[0, -0.001, 0]}
-            opacity={0.4}
+            opacity={0.35}
             scale={2.0}
-            blur={2.0}
+            blur={1.8}
             far={1.4}
             color="#3C3228"
+            resolution={512}
           />
 
           {/* Robot Arm Model */}
