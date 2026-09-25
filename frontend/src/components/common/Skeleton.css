@@ -1,0 +1,57 @@
+/* ============================================
+   Tenure — Skeleton Component
+   Warm-toned loading placeholders
+   ============================================ */
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--blush-light) 25%,
+    var(--blush) 50%,
+    var(--blush-light) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  border-radius: var(--radius-inner);
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton--text {
+  height: 14px;
+  width: 100%;
+  margin-bottom: var(--space-2);
+}
+
+.skeleton--text:last-child {
+  width: 60%;
+}
+
+.skeleton--heading {
+  height: 24px;
+  width: 40%;
+  margin-bottom: var(--space-4);
+}
+
+.skeleton--circle {
+  border-radius: 50%;
+}
+
+.skeleton--card {
+  height: 120px;
+  border-radius: var(--radius-card);
+}
+
+.skeleton--chart {
+  height: 200px;
+  border-radius: var(--radius-card);
+}
+
+.skeleton--value {
+  height: 32px;
+  width: 80px;
+  border-radius: var(--radius-inner);
+}

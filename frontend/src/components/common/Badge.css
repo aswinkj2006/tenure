@@ -1,0 +1,77 @@
+/* ============================================
+   Tenure — Badge Component
+   Pill-shaped severity + status badges
+   ============================================ */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-3);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  line-height: 1.5;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+/* Severity variants */
+.badge--critical {
+  background: var(--critical-bg);
+  color: var(--critical);
+  border-color: var(--critical-border);
+}
+
+.badge--high {
+  background: var(--high-bg);
+  color: var(--high);
+  border-color: var(--high-border);
+}
+
+.badge--medium,
+.badge--warn {
+  background: var(--warn-bg);
+  color: var(--warn);
+  border-color: var(--warn-border);
+}
+
+.badge--low,
+.badge--ok {
+  background: var(--ok-bg);
+  color: var(--ok);
+  border-color: var(--ok-border);
+}
+
+/* Status variants */
+.badge--resolved {
+  background: var(--ok-bg);
+  color: var(--ok);
+  border-color: var(--ok-border);
+}
+
+.badge--open {
+  background: var(--warn-bg);
+  color: var(--warn);
+  border-color: var(--warn-border);
+}
+
+/* Outcome variants */
+.badge--confirmed {
+  background: var(--ok-bg);
+  color: var(--ok);
+  border-color: var(--ok-border);
+}
+
+.badge--corrected {
+  background: var(--high-bg);
+  color: var(--high);
+  border-color: var(--high-border);
+}
+
+/* Neutral */
+.badge--neutral {
+  background: var(--blush-light);
+  color: var(--text-secondary);
+  border-color: var(--blush);
+}

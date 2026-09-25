@@ -1,0 +1,96 @@
+/* ============================================
+   Tenure — Twin Embed Component
+   ProtoTwin iframe wrapper
+   ============================================ */
+
+.twin-embed {
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--blush);
+  box-shadow: var(--shadow-card);
+  position: relative;
+}
+
+.twin-embed__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--blush);
+}
+
+.twin-embed__info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.twin-embed__name {
+  font-family: var(--font-heading);
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  color: var(--charcoal);
+}
+
+.twin-embed__status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.twin-embed__frame {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%; /* 16:9 aspect ratio */
+  background: var(--blush-light);
+}
+
+.twin-embed__iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* Placeholder when no iframe URL */
+.twin-embed__placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  color: var(--text-tertiary);
+}
+
+.twin-embed__placeholder-icon {
+  width: 48px;
+  height: 48px;
+  opacity: 0.4;
+}
+
+.twin-embed__placeholder-text {
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+}
+
+/* Gear watermark in corner */
+.twin-embed__watermark {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  width: 48px;
+  height: 48px;
+  color: var(--terracotta);
+  opacity: 0.08;
+  pointer-events: none;
+}

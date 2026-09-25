@@ -1,0 +1,103 @@
+/* ============================================
+   Tenure — Filter Bar Component
+   Rounded pill filters for logs page
+   ============================================ */
+
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-6);
+  background: var(--surface);
+  border: 1px solid var(--blush);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+.filter-bar__group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.filter-bar__select {
+  padding: var(--space-2) var(--space-4);
+  padding-right: var(--space-8);
+  background: var(--bg);
+  border: 1px solid var(--blush);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-sm);
+  color: var(--charcoal);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237A6552' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  cursor: pointer;
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+
+.filter-bar__select:focus {
+  border-color: var(--terracotta);
+  outline: none;
+}
+
+.filter-bar__search {
+  flex: 1;
+  min-width: 180px;
+  padding: var(--space-2) var(--space-4);
+  padding-left: var(--space-10);
+  background: var(--bg);
+  border: 1px solid var(--blush);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-sm);
+  color: var(--charcoal);
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+
+.filter-bar__search:focus {
+  border-color: var(--terracotta);
+  outline: none;
+}
+
+.filter-bar__search::placeholder {
+  color: var(--text-tertiary);
+}
+
+.filter-bar__search-wrapper {
+  position: relative;
+  flex: 1;
+  min-width: 180px;
+}
+
+.filter-bar__search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: var(--text-tertiary);
+  pointer-events: none;
+}
+
+.filter-bar__actions {
+  margin-left: auto;
+}
+
+.filter-bar__export {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: var(--terracotta);
+  color: white;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  border-radius: var(--radius-pill);
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.filter-bar__export:hover {
+  background: var(--rust);
+}

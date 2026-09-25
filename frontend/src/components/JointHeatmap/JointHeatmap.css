@@ -1,0 +1,136 @@
+/* ============================================
+   Tenure — Joint Telemetry Heatmap
+   24h x 6 Joint status matrix
+   ============================================ */
+
+.joint-heatmap {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.heatmap-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.heatmap-title {
+  font-family: var(--font-heading, 'Fraunces', serif);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--charcoal, #332415);
+  display: block;
+}
+
+.heatmap-sub {
+  font-size: 0.72rem;
+  color: var(--text-tertiary, #A8967F);
+}
+
+.heatmap-legend {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.7rem;
+  color: var(--text-secondary, #7A6552);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.legend-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+}
+
+.dot-ok { background: #C4D9C7; }
+.dot-warn { background: var(--warn, #D9A441); }
+.dot-crit { background: var(--critical, #B23A2E); }
+
+.heatmap-grid-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.heatmap-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.heatmap-row-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-tertiary, #A8967F);
+  width: 20px;
+  text-align: right;
+}
+
+.heatmap-cells {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(24, 1fr);
+  gap: 3px;
+}
+
+.heatmap-cell {
+  height: 14px;
+  border-radius: 2.5px;
+  cursor: pointer;
+  transition: transform 0.15s ease, filter 0.15s ease;
+  animation: cellWaveIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+@keyframes cellWaveIn {
+  from { opacity: 0; transform: scale(0.6); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.heatmap-cell:hover {
+  transform: scale(1.35);
+  filter: brightness(1.15);
+  z-index: 5;
+}
+
+.cell--ok { background: #C4D9C7; }
+.cell--warn { background: var(--warn, #D9A441); }
+.cell--critical { background: var(--critical, #B23A2E); }
+
+.heatmap-time-axis {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.68rem;
+  color: var(--text-tertiary, #A8967F);
+  padding: 0 4px 0 28px;
+}
+
+.heatmap-tooltip-banner {
+  font-size: 0.74rem;
+  color: var(--charcoal, #332415);
+  background: rgba(255, 255, 255, 0.7);
+  padding: 4px 10px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 28px;
+  animation: fadeIn 0.15s ease;
+}
+
+.tooltip-joint {
+  font-weight: 700;
+  color: var(--terracotta, #B8723B);
+}
+
+.tooltip-sep {
+  color: var(--text-tertiary, #A8967F);
+}

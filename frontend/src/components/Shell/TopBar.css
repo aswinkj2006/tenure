@@ -1,0 +1,111 @@
+/* ============================================
+   Tenure — Top Bar Component
+   Frosted glass top header with greeting and toggles
+   ============================================ */
+
+.topbar {
+  position: fixed;
+  top: 0;
+  left: var(--sidebar-width, 240px);
+  right: 0;
+  height: var(--topbar-height, 64px);
+  border-bottom: 1px solid rgba(226, 205, 178, 0.6);
+  border-radius: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  z-index: 90;
+}
+
+.topbar__greeting {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.topbar__greeting-text {
+  font-family: var(--font-heading, 'Fraunces', serif);
+  font-size: 1.12rem;
+  font-weight: 600;
+  color: var(--charcoal, #332415);
+}
+
+.topbar__greeting-date {
+  font-size: 0.76rem;
+  color: var(--text-tertiary, #A8967F);
+}
+
+.topbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.topbar__pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-full, 9999px);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--charcoal, #332415);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.topbar__pill-btn:hover {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: var(--terracotta, #B8723B);
+  transform: translateY(-1px);
+}
+
+.topbar__icon-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  color: var(--charcoal, #332415);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.topbar__icon-btn:hover {
+  background: rgba(255, 255, 255, 0.85);
+  transform: scale(1.05);
+}
+
+.topbar__badge-count {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 3px;
+  background: var(--critical, #B23A2E);
+  color: white;
+  font-size: 9px;
+  font-weight: 700;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulse 1.5s infinite;
+}
+
+.topbar__reconnecting {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: var(--warn-bg, #FBF1DA);
+  color: var(--warn, #D9A441);
+  font-size: 0.72rem;
+  font-weight: 600;
+  border-radius: var(--radius-full, 9999px);
+  border: 1px solid var(--warn-border, #F0D99A);
+}

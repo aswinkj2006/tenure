@@ -1,0 +1,26 @@
+/* ============================================
+   Tenure — App Layout
+   Frosted Glass UI on Living Ambient Backdrop
+   ============================================ */
+
+.app {
+  display: flex;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.app__content {
+  flex: 1;
+  margin-left: var(--sidebar-width, 240px);
+  margin-top: var(--topbar-height, 64px);
+  padding: 32px;
+  max-width: calc(100vw - var(--sidebar-width, 240px));
+  position: relative;
+  z-index: 10;
+}
+
+.page-motion-container {
+  width: 100%;
+  min-height: calc(100vh - var(--topbar-height, 64px) - 64px);
+}

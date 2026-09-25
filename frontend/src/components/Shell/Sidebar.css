@@ -1,0 +1,150 @@
+/* ============================================
+   Tenure — Sidebar Component
+   Frosted glass left navigation with Fraunces logo
+   ============================================ */
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--sidebar-width, 240px);
+  height: 100vh;
+  border-right: 1px solid rgba(226, 205, 178, 0.6);
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  padding: 24px 16px;
+}
+
+/* ── Logo ── */
+.sidebar__logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  margin-bottom: 28px;
+}
+
+.sidebar__logo-icon {
+  width: 28px;
+  height: 28px;
+  color: var(--terracotta, #B8723B);
+  flex-shrink: 0;
+}
+
+.sidebar__logo-text {
+  font-family: var(--font-heading, 'Fraunces', serif);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--charcoal, #332415);
+  letter-spacing: -0.02em;
+}
+
+/* ── Navigation ── */
+.sidebar__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  position: relative;
+}
+
+.sidebar__link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border-radius: var(--radius-inner, 12px);
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--text-secondary, #7A6552);
+  transition: color 0.2s ease, transform 0.2s ease;
+  text-decoration: none;
+  z-index: 1;
+}
+
+.sidebar__link:hover {
+  color: var(--charcoal, #332415);
+  transform: translateX(2px);
+}
+
+.sidebar__link-icon {
+  width: 19px;
+  height: 19px;
+  flex-shrink: 0;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sidebar__link:hover .sidebar__link-icon {
+  transform: scale(1.1);
+}
+
+.sidebar__link--active {
+  color: var(--charcoal, #332415);
+  font-weight: 600;
+}
+
+/* Framer motion active pill */
+.sidebar__active-pill {
+  position: absolute;
+  inset: 0;
+  background: rgba(184, 114, 59, 0.12);
+  border: 1px solid rgba(184, 114, 59, 0.25);
+  border-radius: var(--radius-inner, 12px);
+  z-index: -1;
+  box-shadow: 0 2px 8px rgba(184, 114, 59, 0.08);
+}
+
+/* ── Footer ── */
+.sidebar__footer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(226, 205, 178, 0.5);
+  margin-top: auto;
+}
+
+.sidebar__cmd-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text-secondary, #7A6552);
+  font-size: 0.78rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.sidebar__cmd-btn:hover {
+  border-color: var(--terracotta, #B8723B);
+  color: var(--charcoal, #332415);
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.sidebar__cmd-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sidebar__cmd-kbd {
+  font-size: 0.7rem;
+  padding: 1px 5px;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 4px;
+}
+
+.sidebar__status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: var(--text-tertiary, #A8967F);
+  padding: 0 4px;
+}

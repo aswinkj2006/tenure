@@ -1,0 +1,126 @@
+/* ============================================
+   Tenure — Living Ambient Backdrop
+   Multi-blob mesh gradient + film grain + parallax
+   ============================================ */
+
+.ambient-backdrop {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+  background-color: #F6EEE0;
+  transition: background-color 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ambient-backdrop.backdrop--healthy {
+  background-color: #F5EFE3;
+}
+
+.ambient-backdrop.backdrop--critical {
+  background-color: #FAF0EE;
+}
+
+/* Mesh gradient blobs */
+.mesh-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  -webkit-filter: blur(80px);
+  will-change: transform, opacity;
+  pointer-events: none;
+}
+
+.blob-1 {
+  width: 520px;
+  height: 520px;
+  top: -10%;
+  right: 15%;
+  background: radial-gradient(circle, rgba(184, 114, 59, 0.22) 0%, transparent 70%);
+  animation: blobDrift1 48s infinite ease-in-out;
+}
+
+.blob-2 {
+  width: 640px;
+  height: 640px;
+  bottom: -15%;
+  left: 5%;
+  background: radial-gradient(circle, rgba(226, 205, 178, 0.35) 0%, transparent 70%);
+  animation: blobDrift2 56s infinite ease-in-out;
+}
+
+.blob-3 {
+  width: 440px;
+  height: 440px;
+  top: 30%;
+  left: 35%;
+  background: radial-gradient(circle, rgba(137, 74, 29, 0.12) 0%, transparent 70%);
+  animation: blobDrift3 42s infinite ease-in-out;
+}
+
+.blob-4 {
+  width: 480px;
+  height: 480px;
+  bottom: 20%;
+  right: -5%;
+  background: radial-gradient(circle, rgba(212, 155, 53, 0.14) 0%, transparent 70%);
+  animation: blobDrift1 50s infinite reverse ease-in-out;
+}
+
+@keyframes blobDrift1 {
+  0% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(60px, 80px) scale(1.08); }
+  66% { transform: translate(-40px, 50px) scale(0.94); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+@keyframes blobDrift2 {
+  0% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(-70px, -50px) scale(1.05); }
+  66% { transform: translate(50px, -80px) scale(0.96); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+@keyframes blobDrift3 {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-50px, 60px) scale(1.12); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+/* Watermark gear */
+.backdrop-watermark-gear {
+  position: absolute;
+  bottom: -60px;
+  right: -60px;
+  width: 520px;
+  height: 520px;
+  color: var(--terracotta, #B8723B);
+  opacity: 0.045;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Dust motes canvas */
+.dust-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Film grain noise overlay */
+.film-grain-layer {
+  position: absolute;
+  inset: 0;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* Reduced effects state */
+.ambient-backdrop.reduced .mesh-blob {
+  animation: none !important;
+  filter: blur(40px);
+}
+
+.ambient-backdrop.reduced .backdrop-watermark-gear {
+  display: none;
+}

@@ -1,0 +1,69 @@
+.bodymap-container {
+  background: var(--surface-card, #FAF8F5);
+  border: 1px solid var(--border-subtle, #E8E2D9);
+  border-radius: var(--radius-md, 8px);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bodymap-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.bodymap-title {
+  font-family: var(--font-heading, 'Fraunces', serif);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-primary, #2C2724);
+}
+
+.bodymap-subtitle {
+  font-size: 0.7rem;
+  color: var(--text-tertiary, #8A8178);
+}
+
+.bodymap-svg-wrapper {
+  width: 100%;
+  height: 120px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.bodymap-svg {
+  width: 100%;
+  max-width: 220px;
+  height: 100%;
+  overflow: visible;
+}
+
+.bodymap-joint-node {
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.bodymap-joint-node:hover circle:last-of-type {
+  transform: scale(1.15);
+  transform-origin: center;
+}
+
+.bodymap-joint-label {
+  font-size: 9px;
+  font-weight: 600;
+  fill: var(--text-secondary, #5C554E);
+  pointer-events: none;
+}
+
+.bodymap-joint-node.pulse-danger circle:first-child {
+  animation: svgRingPulse 1.5s infinite;
+}
+
+@keyframes svgRingPulse {
+  0% { transform: scale(1); opacity: 0.8; }
+  70% { transform: scale(1.4); opacity: 0; }
+  100% { transform: scale(1); opacity: 0; }
+}
