@@ -16,7 +16,7 @@ const USE_MOCKS = false; // Primary live backend mode
 async function request(path, options = {}) {
   const url = `${API_BASE}${path}`;
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), options.timeout || 6000);
+  const timeoutId = setTimeout(() => controller.abort(), options.timeout || 30000);
   
   try {
     const res = await fetch(url, {

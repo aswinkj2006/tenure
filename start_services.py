@@ -12,12 +12,23 @@ Usage:
 """
 
 import subprocess
+import os
 import sys
 import time
 from pathlib import Path
 
 ROOT_DIR = Path(__file__).parent
-PYTHON_EXE = sys.executable
+
+# Ensure we use project .venv or Python 3.11 with all installed dependencies
+venv_py = ROOT_DIR / ".venv" / "Scripts" / "python.exe"
+py311_candidate = r"C:\Users\Aswin K J\AppData\Local\Programs\Python\Python311\python.exe"
+
+if venv_py.exists():
+    PYTHON_EXE = str(venv_py)
+elif os.path.exists(py311_candidate):
+    PYTHON_EXE = py311_candidate
+else:
+    PYTHON_EXE = sys.executable
 
 SERVICES = [
     {
