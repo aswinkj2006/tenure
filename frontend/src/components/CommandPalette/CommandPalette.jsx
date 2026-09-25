@@ -5,12 +5,12 @@ import {
   LayoutDashboard, 
   Cpu, 
   FileText, 
-  Sparkles, 
+  Presentation,
   AlertTriangle, 
   Sliders, 
   Search,
   CheckCircle2,
-  Maximize2
+  ExternalLink
 } from 'lucide-react';
 import { toast } from 'sonner';
 import useSensorStore from '../../stores/sensorStore';
@@ -82,6 +82,18 @@ export default function CommandPalette() {
           >
             <FileText size={15} />
             <span>Diagnostic & Incident Logs</span>
+          </Command.Item>
+          <Command.Item
+            onSelect={() =>
+              runCommand(() => {
+                window.open('/deck.html', '_blank');
+              })
+            }
+            className="command-item"
+          >
+            <Presentation size={15} />
+            <span>Open Interactive Pitch Deck (11 Slides)</span>
+            <ExternalLink size={12} style={{ marginLeft: 'auto', opacity: 0.5 }} />
           </Command.Item>
         </Command.Group>
 
