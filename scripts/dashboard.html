@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ProtoTwin Live WebSocket Telemetry</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F6EEE0;
+      --surface: #FFFBF5;
+      --charcoal: #332415;
+      --secondary: #7A6552;
+      --terracotta: #B8723B;
+      --ok: #5E8C61;
+      --warn: #D9A441;
+      --font-heading: 'Fraunces', serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--charcoal);
+      font-family: var(--font-body);
+      padding: 32px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 251, 245, 0.7);
+      backdrop-filter: blur(16px);
+      padding: 20px 28px;
+      border-radius: 16px;
+      border: 1px solid rgba(226, 205, 178, 0.8);
+      box-shadow: 0 4px 20px rgba(51, 36, 21, 0.06);
+    }
+
+    h1 {
+      font-family: var(--font-heading);
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      background: rgba(226, 205, 178, 0.4);
+      color: var(--secondary);
+    }
+
+    .status-badge.connected {
+      background: #EAF2E7;
+      color: var(--ok);
+      border: 1px solid #B5D4B7;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid rgba(226, 205, 178, 0.7);
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 4px 16px rgba(51, 36, 21, 0.04);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: transform 0.15s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      border-color: var(--terracotta);
+    }
+
+    .card-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--secondary);
+      font-weight: 600;
+    }
+
+    .card-value {
+      font-family: var(--font-mono);
+      font-size: 1.75rem;
+      font-weight: 600;
+      color: var(--charcoal);
+    }
+
+    .card-meta {
+      font-size: 0.75rem;
+      color: var(--secondary);
+    }
+
+    .footer-links {
+      margin-top: auto;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--secondary);
+    }
+
+    .footer-links a {
+      color: var(--terracotta);
+      text-decoration: none;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>ProtoTwin Telemetry Stream</h1>
+      <p style="font-size: 0.85rem; color: var(--secondary); margin-top: 4px;">
+        Listening to ws://localhost:8765
+      </p>
+    </div>
+    <div id="status" class="status-badge">
+      <span class="dot"></span>
+      <span id="status-text">DISCONNECTED</span>
+    </div>
+  </header>
+
+  <main class="grid" id="sensor-grid">
+    <!-- Populated dynamically from WebSocket telemetry -->
+  </main>
+
+  <div class="footer-links">
+    Part of the Tenure Autonomous Industrial Twin Platform &bull;
+    <a href="http://localhost:5173" target="_blank">Open Full Tenure 3D Console &rarr;</a>
+  </div>
+
+  <script>
+    const WS_URL = 'ws://localhost:8765';
+    const grid = document.getElementById('sensor-grid');
+    const statusEl = document.getElementById('status');
+    const statusText = document.getElementById('status-text');
+    const cardMap = {};
+
+    function connect() {
+      const ws = new WebSocket(WS_URL);
+
+      ws.onopen = () => {
+        statusEl.className = 'status-badge connected';
+        statusText.textContent = 'LIVE 60HZ';
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          updateCards(data);
+        } catch (err) {
+          console.error('Parse error:', err);
+        }
+      };
+
+      ws.onclose = () => {
+        statusEl.className = 'status-badge';
+        statusText.textContent = 'DISCONNECTED — RETRYING';
+        setTimeout(connect, 2000);
+      };
+
+      ws.onerror = () => {
+        ws.close();
+      };
+    }
+
+    function updateCards(data) {
+      for (const [key, val] of Object.entries(data)) {
+        if (!cardMap[key]) {
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.innerHTML = `
+            <div class="card-title">${key.replace(/_/g, ' ')}</div>
+            <div class="card-value" id="val-${key}">0.00</div>
+            <div class="card-meta">Real-time reading</div>
+          `;
+          grid.appendChild(card);
+          cardMap[key] = document.getElementById(`val-${key}`);
+        }
+        const numVal = typeof val === 'number' ? val.toFixed(3) : val;
+        cardMap[key].textContent = numVal;
+      }
+    }
+
+    connect();
+  </script>
+</body>
+</html>
