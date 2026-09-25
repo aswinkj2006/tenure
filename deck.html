@@ -3,16 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tenure — Pitch Deck</title>
-  
-  <!-- Google Fonts: Fraunces, Inter, JetBrains Mono -->
+  <title>Tenure — Industry 5.0 Human-Centric Factory Maintenance</title>
+  <meta name="description" content="Tenure is a unified industrial intelligence platform bridging human expertise and machine intelligence for proactive factory maintenance." />
+
+  <!-- Typography: Fraunces, Inter, JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
 
   <style>
     /* ==========================================================================
-       Tenure Design Tokens
+       DESIGN TOKENS & RESET
        ========================================================================== */
     :root {
       --charcoal: #332415;
@@ -21,252 +22,307 @@
       --blush: #E2CDB2;
       --cream: #F6EEE0;
       --paper: #FFFBF5;
+      
+      /* Status Accents (Used strictly in diagrams) */
       --sage: #5E8C61;
       --ochre: #D9A441;
       --brick: #B23A2E;
-      
-      --font-heading: 'Fraunces', Georgia, serif;
-      --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+
+      --font-display: 'Fraunces', Georgia, serif;
+      --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
-      
+
       --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-      --spring-physics: cubic-bezier(0.34, 1.56, 0.64, 1);
+      --transition-slide: 450ms var(--ease-out-expo);
     }
 
-    * {
+    *, *::before, *::after {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
     }
 
     html, body {
       width: 100vw;
-      height: 100vh;
       height: 100dvh;
       overflow: hidden;
-      background-color: var(--cream);
+      background-color: var(--charcoal);
       color: var(--charcoal);
       font-family: var(--font-body);
+      -webkit-font-smoothing: antialiased;
       user-select: none;
     }
 
-    /* Ambient Film Grain Texture */
-    .film-grain {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 99;
-      opacity: 0.035;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    }
-
     /* ==========================================================================
-       Slides Container & Transitions
+       DECK STAGE & SLIDE CONTAINER
        ========================================================================== */
-    .deck-container {
+    .deck-viewport {
       position: relative;
       width: 100vw;
-      height: 100vh;
       height: 100dvh;
       overflow: hidden;
     }
 
     .slide {
       position: absolute;
-      inset: 0;
+      top: 0;
+      left: 0;
       width: 100vw;
-      height: 100vh;
       height: 100dvh;
-      padding: 5vw 7vw 6vw;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
       opacity: 0;
       visibility: hidden;
       transform: translateY(16px);
-      transition: opacity 0.45s var(--ease-out-expo), transform 0.45s var(--ease-out-expo), visibility 0.45s;
+      transition: opacity 380ms var(--ease-out-expo), transform 450ms var(--ease-out-expo), visibility 450ms;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: clamp(2rem, 5vw, 4.5rem) clamp(2.5rem, 6vw, 6rem);
+      pointer-events: none;
       z-index: 1;
-      overflow: hidden;
     }
 
     .slide.active {
       opacity: 1;
       visibility: visible;
       transform: translateY(0);
+      pointer-events: auto;
+      z-index: 10;
+    }
+
+    /* Ambient Film Grain & Noise Overlay */
+    .slide::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.025;
+      background-image: radial-gradient(var(--charcoal) 1px, transparent 1px);
+      background-size: 8px 8px;
+    }
+
+    /* ==========================================================================
+       SHARED TYPOGRAPHY & ELEMENTS
+       ========================================================================== */
+    .kicker {
+      font-family: var(--font-mono);
+      font-size: clamp(0.75rem, 1.1vw, 0.9rem);
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .kicker::before {
+      content: "";
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .headline {
+      font-family: var(--font-display);
+      font-weight: 700;
+      line-height: 1.08;
+      letter-spacing: -0.025em;
+    }
+
+    .supporting {
+      font-size: clamp(1.05rem, 1.8vw, 1.4rem);
+      line-height: 1.5;
+      font-weight: 400;
+      max-width: 44ch;
+    }
+
+    /* ==========================================================================
+       GEAR MOTIF STYLES
+       ========================================================================== */
+    .gear-spin {
+      animation: spin-cw 60s linear infinite;
+      transform-origin: center;
+    }
+    .gear-spin-reverse {
+      animation: spin-ccw 45s linear infinite;
+      transform-origin: center;
+    }
+
+    @keyframes spin-cw {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    @keyframes spin-ccw {
+      from { transform: rotate(360deg); }
+      to { transform: rotate(0deg); }
+    }
+
+    /* ==========================================================================
+       SLIDE 1: TITLE / HOOK (DARK)
+       ========================================================================== */
+    #slide-1 {
+      background: radial-gradient(circle at 85% 20%, #3e2e1c 0%, var(--charcoal) 60%);
+      color: var(--cream);
+      justify-content: space-between;
+    }
+
+    #slide-1 .bg-gear-hero {
+      position: absolute;
+      right: -12vw;
+      top: -15vh;
+      width: clamp(500px, 55vw, 850px);
+      height: clamp(500px, 55vw, 850px);
+      opacity: 0.07;
+      pointer-events: none;
+    }
+
+    #slide-1 .title-content {
+      margin-top: auto;
+      margin-bottom: auto;
+      max-width: 65vw;
+      position: relative;
       z-index: 2;
     }
 
-    /* Dark Slide Variant for Peak Slides */
-    .slide.slide--dark {
-      background-color: var(--charcoal);
-      color: var(--cream);
+    #slide-1 .brand-title {
+      font-size: clamp(5rem, 12vw, 10.5rem);
+      font-weight: 900;
+      color: var(--paper);
+      letter-spacing: -0.04em;
+      line-height: 0.9;
+      margin-bottom: 1.5rem;
+      text-transform: uppercase;
     }
-    .slide.slide--dark .slide-tagline,
-    .slide.slide--dark .slide-meta {
+
+    #slide-1 .hook-statement {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: clamp(1.4rem, 2.8vw, 2.4rem);
+      line-height: 1.3;
       color: var(--blush);
+      max-width: 26ch;
+      font-weight: 300;
     }
 
-    /* Slide Header & Content Hierarchy */
-    .slide-header {
-      max-width: 1100px;
+    #slide-1 .footer-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--blush);
+      opacity: 0.75;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(226, 205, 178, 0.15);
     }
 
-    .slide-eyebrow {
-      display: inline-flex;
+    /* ==========================================================================
+       SLIDE 2: THE PARADIGM SHIFT (LIGHT CREAM)
+       ========================================================================== */
+    #slide-2 {
+      background: var(--cream);
+      color: var(--charcoal);
+    }
+
+    .paradigm-grid {
+      display: grid;
+      grid-template-columns: 1fr 60px 1fr;
       align-items: center;
-      gap: 8px;
+      gap: 2rem;
+      margin: 2.5rem 0 2rem;
+      flex: 1;
+    }
+
+    .paradigm-card {
+      background: var(--paper);
+      border-radius: 16px;
+      padding: 2rem;
+      border: 1px solid rgba(51, 36, 21, 0.08);
+      box-shadow: 0 12px 32px rgba(51, 36, 21, 0.04);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      position: relative;
+    }
+
+    .paradigm-card.highlight {
+      border: 2px solid var(--terracotta);
+      background: #FFFDF9;
+      box-shadow: 0 16px 40px rgba(184, 114, 59, 0.08);
+    }
+
+    .paradigm-tag {
       font-family: var(--font-mono);
       font-size: 0.85rem;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--terracotta);
-      margin-bottom: 1rem;
-    }
-    .slide--dark .slide-eyebrow {
-      color: var(--blush);
+      letter-spacing: 0.08em;
+      margin-bottom: 0.75rem;
+      display: inline-block;
     }
 
-    .slide-title {
-      font-family: var(--font-heading);
-      font-size: clamp(2.4rem, 4.2vw, 4.4rem);
-      font-weight: 700;
-      line-height: 1.12;
-      letter-spacing: -0.025em;
-      color: var(--charcoal);
-      margin-bottom: 1.2rem;
-    }
-    .slide--dark .slide-title {
-      color: var(--paper);
-    }
-
-    .slide-tagline {
-      font-size: clamp(1.15rem, 1.6vw, 1.5rem);
-      line-height: 1.45;
-      color: #7A6552;
-      max-width: 820px;
-      font-weight: 400;
-    }
-
-    .slide-body {
+    .paradigm-diagram-box {
       flex: 1;
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 100%;
-      min-height: 0;
-      margin: 1.5vh 0;
+      min-height: 190px;
     }
 
-    /* Background Watermark Gear */
-    .slide-gear-bg {
-      position: absolute;
-      right: -8vw;
-      bottom: -10vh;
-      width: clamp(380px, 45vw, 620px);
-      height: clamp(380px, 45vw, 620px);
-      color: var(--terracotta);
-      opacity: 0.05;
-      pointer-events: none;
-      z-index: 0;
-      animation: rotateGear 120s linear infinite;
-    }
-    .slide--dark .slide-gear-bg {
-      color: var(--blush);
-      opacity: 0.06;
-    }
-
-    @keyframes rotateGear {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-
-    /* ==========================================================================
-       Slide 1: Hero / Title
-       ========================================================================== */
-    .title-hero {
+    .shift-arrow {
       display: flex;
-      flex-direction: column;
-      align-items: flex-start;
       justify-content: center;
-      height: 100%;
-      position: relative;
-      z-index: 2;
-    }
-
-    .brand-mark {
-      font-family: var(--font-heading);
-      font-size: clamp(4.5rem, 9.5vw, 9.8rem);
-      font-weight: 700;
-      letter-spacing: -0.04em;
-      line-height: 0.95;
-      color: var(--charcoal);
-      margin-bottom: 2rem;
-      position: relative;
-    }
-
-    .brand-mark span {
+      align-items: center;
       color: var(--terracotta);
     }
 
-    .title-thesis {
-      font-family: var(--font-heading);
-      font-size: clamp(1.4rem, 2.4vw, 2.2rem);
-      font-weight: 400;
-      font-style: italic;
-      color: var(--charcoal);
-      line-height: 1.35;
-      max-width: 860px;
-      margin-bottom: 2.5rem;
-    }
-
-    .title-pill-row {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .title-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 18px;
-      background: rgba(255, 251, 245, 0.7);
-      border: 1px solid var(--blush);
-      border-radius: 999px;
-      font-family: var(--font-mono);
-      font-size: 0.82rem;
-      color: var(--charcoal);
-      font-weight: 500;
-      box-shadow: 0 4px 12px rgba(51, 36, 21, 0.04);
-    }
-
-    .title-pill-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--terracotta);
-    }
-
-    /* ==========================================================================
-       Slide 2: Problem Visual Matrix
-       ========================================================================== */
-    .problem-grid {
+    .pillar-row {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 2vw;
-      width: 100%;
-      max-width: 1200px;
+      gap: 1.5rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid rgba(51, 36, 21, 0.1);
     }
 
-    .problem-card {
-      background: var(--paper);
-      border: 1px solid var(--blush);
-      border-radius: 20px;
-      padding: 32px 28px;
-      box-shadow: 0 8px 24px rgba(51, 36, 21, 0.05);
+    .pillar-chip {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--charcoal);
+    }
+
+    .pillar-chip svg {
+      color: var(--terracotta);
+      flex-shrink: 0;
+    }
+
+    /* ==========================================================================
+       SLIDE 3: THE PROBLEM - SILOED MACHINERY (BLUSH TONE)
+       ========================================================================== */
+    #slide-3 {
+      background: linear-gradient(135deg, #E8D7C3 0%, var(--blush) 100%);
+      color: var(--charcoal);
+    }
+
+    .silos-cluster {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+      margin: 2.5rem 0;
+      flex: 1;
+    }
+
+    .silo-box {
+      background: rgba(255, 251, 245, 0.7);
+      backdrop-filter: blur(10px);
+      border-radius: 14px;
+      padding: 1.5rem;
+      border: 1px dashed rgba(178, 58, 46, 0.35);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -274,1089 +330,914 @@
       overflow: hidden;
     }
 
-    .problem-card::before {
-      content: '';
+    .silo-box::before {
+      content: "ISOLATED PROTOCOL";
       position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 4px;
-      background: var(--brick);
-      opacity: 0.75;
-    }
-
-    .problem-icon-wrap {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
-      background: rgba(178, 58, 46, 0.08);
-      color: var(--brick);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 20px;
-    }
-
-    .problem-card h3 {
-      font-family: var(--font-heading);
-      font-size: 1.35rem;
-      font-weight: 600;
-      margin-bottom: 10px;
-      color: var(--charcoal);
-    }
-
-    .problem-card p {
-      font-size: 0.95rem;
-      line-height: 1.5;
-      color: #7A6552;
-    }
-
-    .problem-stat-badge {
-      margin-top: 24px;
+      top: 10px;
+      right: 12px;
       font-family: var(--font-mono);
-      font-size: 0.75rem;
-      font-weight: 600;
+      font-size: 0.65rem;
       color: var(--brick);
-      background: rgba(178, 58, 46, 0.06);
-      padding: 6px 12px;
-      border-radius: 6px;
-      width: fit-content;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    .silo-pulse-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--brick);
+      display: inline-block;
+      margin-right: 6px;
+      box-shadow: 0 0 0 0 rgba(178, 58, 46, 0.7);
+      animation: pulse-red 2s infinite;
+    }
+
+    @keyframes pulse-red {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(178, 58, 46, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(178, 58, 46, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(178, 58, 46, 0); }
     }
 
     /* ==========================================================================
-       Slide 4: Architecture Live Pipeline SVG
+       SLIDE 4: THE SOLUTION - ONE LIVING ECOSYSTEM (CREAM)
        ========================================================================== */
-    .arch-container {
-      width: 100%;
-      max-width: 1200px;
-      background: var(--paper);
-      border: 1px solid var(--blush);
-      border-radius: 24px;
-      padding: 40px 30px;
-      box-shadow: 0 12px 36px rgba(51, 36, 21, 0.06);
+    #slide-4 {
+      background: var(--cream);
+      color: var(--charcoal);
     }
 
-    .arch-svg {
+    .ecosystem-container {
+      flex: 1;
+      position: relative;
+      margin: 1.5rem 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .ecosystem-svg {
       width: 100%;
-      height: auto;
+      max-height: 48vh;
       overflow: visible;
     }
 
-    /* Traveling pipeline pulse */
-    .pipe-line {
-      stroke: var(--blush);
-      stroke-width: 3;
+    /* Animated connecting dash path */
+    .stream-line {
+      stroke: var(--terracotta);
+      stroke-width: 2;
       stroke-dasharray: 6 6;
-      animation: dashFlow 20s linear infinite;
+      animation: dash-flow 1.8s linear infinite;
     }
 
-    .pulse-dot {
-      fill: var(--terracotta);
-      filter: drop-shadow(0 0 4px rgba(184, 114, 59, 0.6));
-    }
-
-    @keyframes dashFlow {
-      to { stroke-dashoffset: -200; }
+    @keyframes dash-flow {
+      to { stroke-dashoffset: -24; }
     }
 
     /* ==========================================================================
-       Slide 5: Zero-Shot vs Traditional Comparison
+       SLIDE 5: THREE PRINCIPLES, BUILT IN (ASYMMETRIC 3-PANEL)
        ========================================================================== */
-    .comp-container {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 2.5vw;
-      width: 100%;
-      max-width: 1140px;
-    }
-
-    .comp-card {
-      border-radius: 24px;
-      padding: 36px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-
-    .comp-card--old {
-      background: rgba(226, 205, 178, 0.3);
-      border: 1px dashed var(--blush);
+    #slide-5 {
+      background: var(--cream);
       color: var(--charcoal);
     }
 
-    .comp-card--new {
+    .principles-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr 1fr;
+      gap: 1.5rem;
+      margin: 2rem 0;
+      flex: 1;
+      align-items: stretch;
+    }
+
+    .principle-card {
       background: var(--paper);
-      border: 2px solid var(--terracotta);
-      box-shadow: 0 12px 36px rgba(184, 114, 59, 0.12);
+      border-radius: 16px;
+      padding: 1.75rem;
+      border: 1px solid rgba(51, 36, 21, 0.08);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 8px 24px rgba(51, 36, 21, 0.04);
       position: relative;
     }
 
-    .comp-badge {
-      font-family: var(--font-mono);
-      font-size: 0.76rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      padding: 4px 10px;
-      border-radius: 6px;
-      margin-bottom: 16px;
-      width: fit-content;
-    }
-
-    .comp-badge--old {
-      background: rgba(51, 36, 21, 0.08);
-      color: var(--charcoal);
-    }
-
-    .comp-badge--new {
-      background: rgba(184, 114, 59, 0.12);
-      color: var(--terracotta);
-    }
-
-    .comp-headline {
-      font-family: var(--font-heading);
-      font-size: 1.6rem;
-      font-weight: 700;
-      margin-bottom: 16px;
-    }
-
-    .comp-timeline {
-      margin: 20px 0;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .comp-step {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 0.92rem;
-    }
-
-    .comp-step-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-    .comp-card--old .comp-step-dot { background: var(--brick); }
-    .comp-card--new .comp-step-dot { background: var(--sage); }
-
-    /* ==========================================================================
-       Slide 6: The Tenure Feedback Loop
-       ========================================================================== */
-    .loop-wrapper {
-      width: 100%;
-      max-width: 980px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .loop-svg {
-      width: 100%;
-      max-height: 480px;
-    }
-
-    /* ==========================================================================
-       Slide 7: Citation Grounding UI Mockup
-       ========================================================================== */
-    .citation-mockup {
-      width: 100%;
-      max-width: 980px;
-      background: var(--paper);
-      border: 1px solid var(--blush);
-      border-radius: 24px;
-      padding: 36px 40px;
-      box-shadow: 0 16px 40px rgba(51, 36, 21, 0.08);
-    }
-
-    .citation-chip-demo {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 14px;
-      background: rgba(184, 114, 59, 0.1);
-      border: 1px solid rgba(184, 114, 59, 0.3);
-      border-radius: 8px;
+    .principle-num {
       font-family: var(--font-mono);
       font-size: 0.8rem;
+      font-weight: 700;
       color: var(--terracotta);
-      font-weight: 600;
-      margin-bottom: 20px;
+      margin-bottom: 0.5rem;
     }
 
-    .citation-quote-box {
-      border-left: 3px solid var(--terracotta);
-      padding-left: 20px;
-      margin-bottom: 24px;
-    }
-
-    .citation-quote {
-      font-family: var(--font-heading);
-      font-size: 1.3rem;
-      font-style: italic;
-      line-height: 1.5;
+    .principle-title {
+      font-family: var(--font-display);
+      font-size: 1.35rem;
+      font-weight: 700;
       color: var(--charcoal);
+      margin-bottom: 0.5rem;
     }
 
-    .citation-meta-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-top: 1px solid var(--blush);
-      padding-top: 18px;
+    .principle-desc {
+      font-size: 0.92rem;
+      line-height: 1.45;
+      color: rgba(51, 36, 21, 0.8);
+      margin-bottom: 1.25rem;
+    }
+
+    .principle-widget {
+      background: var(--cream);
+      border-radius: 10px;
+      padding: 1rem;
+      border: 1px solid rgba(51, 36, 21, 0.06);
       font-family: var(--font-mono);
       font-size: 0.78rem;
-      color: #7A6552;
-    }
-
-    .citation-confidence-tag {
-      color: var(--sage);
-      font-weight: 700;
     }
 
     /* ==========================================================================
-       Slide 8: Tech Stack Chips
+       SLIDE 6: SEE IT LIVE (MINIMALIST PAUSE)
        ========================================================================== */
-    .stack-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 18px;
-      width: 100%;
-      max-width: 1100px;
-    }
-
-    .stack-chip {
+    #slide-6 {
       background: var(--paper);
-      border: 1px solid var(--blush);
-      border-radius: 16px;
-      padding: 22px 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      box-shadow: 0 4px 16px rgba(51, 36, 21, 0.04);
-      transition: transform 0.2s ease;
-    }
-
-    .stack-layer {
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--terracotta);
-      font-weight: 600;
-    }
-
-    .stack-title {
-      font-family: var(--font-heading);
-      font-size: 1.25rem;
-      font-weight: 700;
       color: var(--charcoal);
+      position: relative;
     }
 
-    .stack-desc {
-      font-size: 0.85rem;
-      color: #7A6552;
-      line-height: 1.4;
+    #slide-6 .live-gear-art {
+      position: absolute;
+      right: 12vw;
+      top: 50%;
+      transform: translateY(-50%);
+      width: clamp(280px, 28vw, 420px);
+      height: clamp(280px, 28vw, 420px);
+      color: var(--terracotta);
+      opacity: 0.85;
+    }
+
+    #slide-6 .live-content {
+      max-width: 50vw;
+      z-index: 2;
     }
 
     /* ==========================================================================
-       Slide 9: Live Demo Cue
+       SLIDE 7: THE THESIS / CLOSING STATEMENT (TYPOGRAPHIC ART)
        ========================================================================== */
-    .demo-cue-wrap {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+    #slide-7 {
+      background: linear-gradient(145deg, #FFFDF9 0%, var(--paper) 100%);
+      color: var(--charcoal);
       justify-content: center;
       text-align: center;
-      gap: 28px;
-    }
-
-    .demo-center-gear {
-      width: 120px;
-      height: 120px;
-      color: var(--terracotta);
-      animation: rotateGear 15s linear infinite;
-    }
-
-    .demo-headline {
-      font-family: var(--font-heading);
-      font-size: clamp(3rem, 5.5vw, 5.5rem);
-      font-weight: 700;
-      color: var(--paper);
-      letter-spacing: -0.03em;
-    }
-
-    .demo-status-pill {
-      font-family: var(--font-mono);
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: var(--sage);
-      background: rgba(94, 140, 97, 0.15);
-      border: 1px solid rgba(94, 140, 97, 0.3);
-      padding: 8px 20px;
-      border-radius: 999px;
-      display: inline-flex;
       align-items: center;
-      gap: 10px;
     }
 
-    .demo-pulse-ring {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--sage);
-      box-shadow: 0 0 0 0 rgba(94, 140, 97, 0.7);
-      animation: livePulse 2s infinite;
+    #slide-7 .thesis-art {
+      max-width: 52ch;
+      margin: 0 auto;
     }
 
-    @keyframes livePulse {
-      0% { box-shadow: 0 0 0 0 rgba(94, 140, 97, 0.7); }
-      70% { box-shadow: 0 0 0 10px rgba(94, 140, 97, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(94, 140, 97, 0); }
-    }
-
-    /* ==========================================================================
-       Slide 10: Vision & Scale Grid
-       ========================================================================== */
-    .vision-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 24px;
-      width: 100%;
-      max-width: 1160px;
-    }
-
-    .vision-card {
-      background: var(--paper);
-      border: 1px solid var(--blush);
-      border-radius: 20px;
-      padding: 32px 28px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .vision-num {
-      font-family: var(--font-heading);
-      font-size: 2.2rem;
-      font-weight: 700;
-      color: var(--terracotta);
-    }
-
-    .vision-title {
-      font-family: var(--font-heading);
-      font-size: 1.25rem;
-      font-weight: 600;
+    #slide-7 .thesis-quote {
+      font-family: var(--font-display);
+      font-size: clamp(2.2rem, 4.4vw, 4.2rem);
+      line-height: 1.18;
+      font-weight: 300;
       color: var(--charcoal);
+      letter-spacing: -0.02em;
     }
 
-    .vision-desc {
-      font-size: 0.9rem;
-      line-height: 1.5;
-      color: #7A6552;
+    #slide-7 .thesis-quote em {
+      font-style: italic;
+      color: var(--terracotta);
+      font-weight: 400;
+    }
+
+    #slide-7 .arc-diagram {
+      margin: 2.5rem auto 1rem;
+      width: 100%;
+      max-width: 540px;
     }
 
     /* ==========================================================================
-       Slide Controls, Navigation Dots, Hints
+       SLIDE 8: THANK YOU / CLOSE (DARK BOOKEND)
        ========================================================================== */
-    .deck-nav {
-      position: fixed;
-      bottom: 24px;
-      left: 0;
-      right: 0;
-      display: flex;
-      align-items: center;
+    #slide-8 {
+      background: radial-gradient(circle at 15% 85%, #3e2e1c 0%, var(--charcoal) 60%);
+      color: var(--cream);
       justify-content: space-between;
-      padding: 0 4vw;
-      z-index: 100;
+    }
+
+    #slide-8 .bg-gear-footer {
+      position: absolute;
+      left: -10vw;
+      bottom: -15vh;
+      width: clamp(450px, 45vw, 750px);
+      height: clamp(450px, 45vw, 750px);
+      opacity: 0.07;
       pointer-events: none;
     }
 
-    .deck-dots {
-      display: flex;
+    #slide-8 .contrast-badge {
+      display: inline-flex;
       align-items: center;
-      gap: 8px;
-      pointer-events: auto;
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
-    }
-
-    .deck-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--blush);
-      cursor: pointer;
-      transition: all 0.25s var(--ease-out-expo);
-    }
-
-    .deck-dot.active {
-      width: 28px;
+      gap: 1rem;
+      background: rgba(226, 205, 178, 0.08);
+      border: 1px solid rgba(226, 205, 178, 0.2);
+      padding: 0.75rem 1.5rem;
       border-radius: 999px;
-      background: var(--terracotta);
-    }
-
-    .slide--dark ~ .deck-nav .deck-dot:not(.active) {
-      background: rgba(226, 205, 178, 0.3);
-    }
-
-    .deck-counter {
       font-family: var(--font-mono);
-      font-size: 0.85rem;
+      font-size: clamp(0.9rem, 1.4vw, 1.2rem);
       font-weight: 600;
-      color: #7A6552;
-      pointer-events: auto;
-    }
-
-    .slide--dark ~ .deck-nav .deck-counter {
+      margin: 2rem 0;
       color: var(--blush);
     }
 
-    .deck-hint {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-family: var(--font-mono);
-      font-size: 0.78rem;
-      color: #7A6552;
-      opacity: 0.85;
-      transition: opacity 0.5s ease;
-      pointer-events: auto;
+    #slide-8 .contrast-badge span.accent {
+      color: var(--terracotta);
     }
 
-    .deck-hint.fade-out {
+    /* ==========================================================================
+       PERSISTENT CONTROLS & HUD
+       ========================================================================== */
+    .deck-hud {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 1.5rem 2rem;
+    }
+
+    .hud-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .hud-brand {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.1rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--charcoal);
+      mix-blend-mode: difference;
+    }
+
+    .hud-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Progress Dots */
+    .progress-dots {
+      display: flex;
+      gap: 8px;
+      pointer-events: auto;
+      background: rgba(51, 36, 21, 0.1);
+      backdrop-filter: blur(8px);
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+      opacity: 0.35;
+      cursor: pointer;
+      transition: all 250ms ease;
+    }
+
+    .dot.active {
+      opacity: 1;
+      transform: scale(1.35);
+      background: var(--terracotta);
+    }
+
+    .slide-counter {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--charcoal);
+      mix-blend-mode: difference;
+    }
+
+    /* Hint Arrow for Slide 1 */
+    .nav-hint {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--blush);
+      opacity: 0.8;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: opacity 300ms ease;
+      z-index: 101;
+    }
+
+    .nav-hint.fade-out {
       opacity: 0;
       pointer-events: none;
     }
 
-    .deck-hint kbd {
-      padding: 2px 6px;
-      border-radius: 4px;
-      background: rgba(51, 36, 21, 0.08);
-      font-size: 0.7rem;
-    }
-
-    /* Fullscreen Toggle Button */
-    .fullscreen-btn {
+    /* Touch & Click Nav Hotspots */
+    .nav-btn {
       position: fixed;
-      top: 24px;
-      right: 28px;
-      padding: 8px 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
       background: rgba(255, 251, 245, 0.6);
-      backdrop-filter: blur(8px);
-      border: 1px solid var(--blush);
-      border-radius: 999px;
-      font-family: var(--font-mono);
-      font-size: 0.75rem;
-      font-weight: 500;
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(51, 36, 21, 0.15);
       color: var(--charcoal);
-      cursor: pointer;
-      z-index: 100;
       display: flex;
       align-items: center;
-      gap: 6px;
-      transition: all 0.2s ease;
-    }
-    .fullscreen-btn:hover {
-      background: var(--paper);
-      border-color: var(--terracotta);
+      justify-content: center;
+      cursor: pointer;
+      z-index: 102;
+      opacity: 0;
+      transition: opacity 200ms ease, transform 200ms ease;
     }
 
-    /* Responsive adjustments */
-    @media (max-width: 1024px) {
-      .problem-grid, .vision-grid, .stack-grid {
-        grid-template-columns: 1fr;
+    body:hover .nav-btn {
+      opacity: 0.65;
+    }
+
+    .nav-btn:hover {
+      opacity: 1 !important;
+      transform: translateY(-50%) scale(1.08);
+    }
+
+    .nav-prev { left: 1rem; }
+    .nav-next { right: 1rem; }
+
+    /* Accessibility / Reduced Motion */
+    @media (prefers-reduced-motion: reduce) {
+      .gear-spin, .gear-spin-reverse, .stream-line {
+        animation: none !important;
       }
-      .comp-container {
-        grid-template-columns: 1fr;
-      }
-      .slide-title {
-        font-size: 2.2rem;
+      .slide {
+        transition: opacity 200ms ease !important;
+        transform: none !important;
       }
     }
   </style>
 </head>
 <body>
-  <div class="film-grain"></div>
 
-  <!-- Fullscreen Hint Button -->
-  <button id="fullscreenBtn" class="fullscreen-btn" title="Toggle Fullscreen (F)">
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
-    </svg>
-    <span>Present (F)</span>
+  <!-- ========================================================================
+       HUD OVERLAY (Brand, Progress, Slide Counter, Fullscreen)
+       ======================================================================== -->
+  <div class="deck-hud">
+    <div class="hud-top">
+      <div class="hud-brand" style="color: #FFFBF5;">TENURE</div>
+      <div style="font-family: var(--font-mono); font-size: 0.75rem; color: #FFFBF5; opacity: 0.7; mix-blend-mode: difference;">
+        PRESS [F] FULLSCREEN • [←/→] NAVIGATE
+      </div>
+    </div>
+    <div class="hud-bottom">
+      <div></div>
+      <div class="progress-dots" id="dots-container" style="color: #FFFBF5;"></div>
+      <div class="slide-counter" id="slide-counter" style="color: #FFFBF5;">01 / 08</div>
+    </div>
+  </div>
+
+  <div class="nav-hint" id="nav-hint">
+    <span>PRESS [→] OR SPACE TO ADVANCE</span>
+  </div>
+
+  <button class="nav-btn nav-prev" id="prev-btn" aria-label="Previous Slide">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+  </button>
+  <button class="nav-btn nav-next" id="next-btn" aria-label="Next Slide">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
   </button>
 
-  <main class="deck-container" id="deck">
+  <!-- ========================================================================
+       SLIDE VIEWPORT
+       ======================================================================== -->
+  <main class="deck-viewport" id="viewport">
 
-    <!-- ======================================================================
-         SLIDE 1: TITLE
-         ====================================================================== -->
-    <section class="slide active" data-slide="1">
-      <div class="title-hero">
-        <div class="slide-eyebrow">
-          <span>Universal Robots UR5e · AI Telemetry · Industrial RAG</span>
-        </div>
-        <h1 class="brand-mark">Tenure<span>.</span></h1>
-        <p class="title-thesis">
-          Every industrial machine gets an AI technician with tenure on that specific unit.
-        </p>
-        <div class="title-pill-row">
-          <div class="title-pill"><span class="title-pill-dot"></span>Zero-Shot Anomaly Detection</div>
-          <div class="title-pill"><span class="title-pill-dot"></span>Isolated Per-Machine Vector Memory</div>
-          <div class="title-pill"><span class="title-pill-dot"></span>Grounded OEM Manual Citations</div>
-        </div>
-      </div>
-
-      <!-- Watermark Gear -->
-      <svg class="slide-gear-bg" viewBox="0 0 400 400" fill="none" stroke="currentColor" strokeWidth="1.2">
-        <circle cx="200" cy="200" r="140" strokeDasharray="6 8" />
-        <circle cx="200" cy="200" r="90" />
-        <circle cx="200" cy="200" r="40" fill="currentColor" opacity="0.1" />
-        <path d="M200 40v30M200 330v30M40 200h30M330 200h30M87 87l21 21M292 292l21 21M87 313l21-21M292 108l21-21" strokeWidth="3" />
+    <!-- ----------------------------------------------------------------------
+         SLIDE 1: TITLE / HOOK (DARK)
+         ---------------------------------------------------------------------- -->
+    <section class="slide active" id="slide-1" data-index="1">
+      <!-- Background Ambient Gear Silhouette -->
+      <svg class="bg-gear-hero gear-spin" viewBox="0 0 100 100" fill="none" stroke="currentColor">
+        <circle cx="50" cy="50" r="34" stroke-width="2" />
+        <circle cx="50" cy="50" r="18" stroke-width="1.5" stroke-dasharray="3 3" />
+        <circle cx="50" cy="50" r="6" fill="currentColor" />
+        <!-- 12 Gear Teeth -->
+        <path d="M47 12 h6 v6 h-6 z M47 82 h6 v6 h-6 z M12 47 h6 v6 h-6 z M82 47 h6 v6 h-6 z
+                 M23 23 h5 v5 h-5 z M72 72 h5 v5 h-5 z M23 72 h5 v5 h-5 z M72 23 h5 v5 h-5 z" fill="currentColor" />
       </svg>
-    </section>
 
-    <!-- ======================================================================
-         SLIDE 2: THE PROBLEM
-         ====================================================================== -->
-    <section class="slide" data-slide="2">
-      <div class="slide-header">
-        <div class="slide-eyebrow">The Problem</div>
-        <h2 class="slide-title">When factory machines act up, diagnosis is broken.</h2>
-        <p class="slide-tagline">
-          Tribal knowledge vanishes when technicians leave, manuals remain unindexed, and predictive ML sits idle waiting for months of historical failures.
+      <div class="kicker" style="color: var(--terracotta);">[ 01 // HOOK ]</div>
+
+      <div class="title-content">
+        <h1 class="brand-title">TENURE</h1>
+        <p class="hook-statement">
+          Industry 4.0 connected the machines.<br />
+          <strong style="font-weight: 700; color: var(--paper);">It forgot the people.</strong>
         </p>
       </div>
 
-      <div class="slide-body">
-        <div class="problem-grid">
-          <div class="problem-card">
-            <div>
-              <div class="problem-icon-wrap">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-              </div>
-              <h3>Tribal Knowledge Walks</h3>
-              <p>The nuance of how Serial #001 behaves lives in one senior engineer’s head. When they retire, that context is permanently lost.</p>
-            </div>
-            <div class="problem-stat-badge font-mono">0% Retained Memory</div>
-          </div>
+      <div class="footer-meta">
+        <div>INDUSTRY 5.0 UNIFIED INTELLIGENCE</div>
+        <div>TENURE PLATFORM // PITCH 2026</div>
+      </div>
+    </section>
 
-          <div class="problem-card">
-            <div>
-              <div class="problem-icon-wrap">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10M6 10h10M6 14h7"/></svg>
-              </div>
-              <h3>800-Page Unindexed PDFs</h3>
-              <p>OEM maintenance guides are dense, static, and disconnected from live joint telemetry during high-pressure downtime.</p>
-            </div>
-            <div class="problem-stat-badge font-mono">Generic & Static</div>
-          </div>
+    <!-- ----------------------------------------------------------------------
+         SLIDE 2: THE PARADIGM SHIFT (LIGHT CREAM)
+         ---------------------------------------------------------------------- -->
+    <section class="slide" id="slide-2" data-index="2">
+      <div class="kicker" style="color: var(--terracotta);">[ 02 // PARADIGM SHIFT ]</div>
+      <h2 class="headline" style="font-size: clamp(2rem, 3.8vw, 3.4rem); margin-bottom: 0.5rem;">
+        Technology should serve humans, not displace them.
+      </h2>
+      <p class="supporting">
+        Industry 5.0 shifts the objective from lights-out automation to human-centric operational resilience.
+      </p>
 
-          <div class="problem-card">
-            <div>
-              <div class="problem-icon-wrap">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-              </div>
-              <h3>Cold-Start ML Barrier</h3>
-              <p>Traditional predictive maintenance models require 6+ months of labeled failure data before flagging their first anomaly.</p>
-            </div>
-            <div class="problem-stat-badge font-mono">Months of Delay</div>
+      <div class="paradigm-grid">
+        <!-- Industry 4.0 -->
+        <div class="paradigm-card">
+          <span class="paradigm-tag" style="color: var(--rust);">INDUSTRY 4.0 — MACHINE FIRST</span>
+          <p style="font-size: 0.88rem; color: rgba(51,36,21,0.7); margin-bottom: 1rem;">
+            Autonomous telemetry loops treat operators as external bystanders reacting to alarms.
+          </p>
+          <div class="paradigm-diagram-box">
+            <svg width="220" height="150" viewBox="0 0 220 150" fill="none">
+              <!-- Machine Mesh -->
+              <rect x="25" y="25" width="45" height="40" rx="6" fill="#E2CDB2" stroke="#894A1D" stroke-width="1.5" />
+              <rect x="105" y="25" width="45" height="40" rx="6" fill="#E2CDB2" stroke="#894A1D" stroke-width="1.5" />
+              <rect x="65" y="85" width="45" height="40" rx="6" fill="#E2CDB2" stroke="#894A1D" stroke-width="1.5" />
+              <path d="M70 45 L105 45 M48 65 L80 85 M130 65 L95 85" stroke="#894A1D" stroke-width="1.5" />
+              <!-- Isolated Human Box -->
+              <rect x="175" y="55" width="38" height="45" rx="6" fill="#FFFBF5" stroke="#B23A2E" stroke-width="1.5" stroke-dasharray="4 4" />
+              <circle cx="194" cy="70" r="5" fill="#B23A2E" />
+              <path d="M186 88 C186 80 202 80 202 88" stroke="#B23A2E" stroke-width="2" />
+              <text x="194" y="112" font-family="JetBrains Mono" font-size="8" fill="#B23A2E" text-anchor="middle" font-weight="600">ISOLATED</text>
+            </svg>
           </div>
         </div>
-      </div>
-    </section>
 
-    <!-- ======================================================================
-         SLIDE 3: THE INSIGHT & THESIS
-         ====================================================================== -->
-    <section class="slide" data-slide="3">
-      <div class="slide-header">
-        <div class="slide-eyebrow">The Core Thesis</div>
-        <h2 class="slide-title">What if every machine had an AI technician born on day one?</h2>
-        <p class="slide-tagline">
-          An isolated reasoning brain per serial number: zero-shot at initial power-on, gaining verified tenure with every resolved incident.
-        </p>
-      </div>
-
-      <div class="slide-body">
-        <div style="text-align: center; max-width: 920px;">
-          <div style="font-family: var(--font-heading); font-size: clamp(2rem, 3.2vw, 3.2rem); font-style: italic; color: var(--terracotta); line-height: 1.3; margin-bottom: 24px;">
-            "Shared foundation intelligence for physics. Isolated private memory for unit history."
-          </div>
-          <div class="title-pill-row" style="justify-content: center;">
-            <div class="title-pill"><span class="title-pill-dot" style="background: var(--sage)"></span>Unit ID: UR5e-001</div>
-            <div class="title-pill"><span class="title-pill-dot" style="background: var(--terracotta)"></span>Isolated Namespace: rag_service/ur5e-001</div>
-            <div class="title-pill"><span class="title-pill-dot" style="background: var(--charcoal)"></span>Status: Live & Append-Only</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ======================================================================
-         SLIDE 4: HOW IT WORKS (ARCHITECTURE)
-         ====================================================================== -->
-    <section class="slide" data-slide="4">
-      <div class="slide-header">
-        <div class="slide-eyebrow">System Architecture</div>
-        <h2 class="slide-title">A real-time pipeline from 6-DOF telemetry to cited action.</h2>
-        <p class="slide-tagline">
-          Zero-shot foundation anomaly detection meets per-machine retrieval in under 50 milliseconds.
-        </p>
-      </div>
-
-      <div class="slide-body">
-        <div class="arch-container">
-          <svg class="arch-svg" viewBox="0 0 1000 240" fill="none">
-            <!-- Connecting Pipeline Lines -->
-            <path class="pipe-line" d="M 160 120 L 320 120" />
-            <path class="pipe-line" d="M 440 120 L 560 120" />
-            <path class="pipe-line" d="M 680 120 L 800 120" />
-            
-            <!-- Traveling Pulse Dot -->
-            <circle class="pulse-dot" cx="240" cy="120" r="5">
-              <animate attributeName="cx" from="160" to="800" dur="4s" repeatCount="indefinite" />
-            </circle>
-
-            <!-- Node 1: Robot Twin -->
-            <rect x="20" y="70" width="140" height="100" rx="14" fill="#FFFBF5" stroke="#B8723B" stroke-width="2" />
-            <text x="90" y="112" text-anchor="middle" font-family="Fraunces" font-size="16" font-weight="700" fill="#332415">UR5e Twin</text>
-            <text x="90" y="134" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#7A6552">10Hz Telemetry</text>
-
-            <!-- Node 2: Anomaly Foundation Model -->
-            <rect x="320" y="70" width="140" height="100" rx="14" fill="#FFFBF5" stroke="#E2CDB2" stroke-width="1.5" />
-            <text x="390" y="112" text-anchor="middle" font-family="Fraunces" font-size="15" font-weight="700" fill="#332415">Zero-Shot AI</text>
-            <text x="390" y="134" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#7A6552">Chronos / MOMENT</text>
-
-            <!-- Node 3: Per-Machine RAG -->
-            <rect x="560" y="70" width="140" height="100" rx="14" fill="#FFFBF5" stroke="#5E8C61" stroke-width="2" />
-            <text x="630" y="112" text-anchor="middle" font-family="Fraunces" font-size="15" font-weight="700" fill="#332415">Unit Memory</text>
-            <text x="630" y="134" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#5E8C61">Qdrant Vector DB</text>
-
-            <!-- Node 4: Technician UI -->
-            <rect x="800" y="70" width="160" height="100" rx="14" fill="#FFFBF5" stroke="#332415" stroke-width="2" />
-            <text x="880" y="112" text-anchor="middle" font-family="Fraunces" font-size="16" font-weight="700" fill="#332415">Cited UI</text>
-            <text x="880" y="134" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#B8723B">3D Twin + Chat</text>
+        <!-- Shift Transition Symbol -->
+        <div class="shift-arrow">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m9 18 6-6-6-6"/>
           </svg>
         </div>
-      </div>
-    </section>
 
-    <!-- ======================================================================
-         SLIDE 5: WHY ZERO-SHOT MATTERS
-         ====================================================================== -->
-    <section class="slide" data-slide="5">
-      <div class="slide-header">
-        <div class="slide-eyebrow">Technical Differentiation</div>
-        <h2 class="slide-title">Why zero-shot changes industrial maintenance.</h2>
-        <p class="slide-tagline">
-          Brand new machines have no failure history. Tenure doesn't need any.
-        </p>
-      </div>
-
-      <div class="slide-body">
-        <div class="comp-container">
-          <!-- Traditional ML -->
-          <div class="comp-card comp-card--old">
-            <div>
-              <div class="comp-badge comp-badge--old">Traditional Predictive ML</div>
-              <div class="comp-headline">Months of Cold Start</div>
-              <p style="font-size: 0.95rem; color: #7A6552; line-height: 1.5;">Requires recording hundreds of real breakdown events to train supervised regression models.</p>
-              
-              <div class="comp-timeline">
-                <div class="comp-step"><div class="comp-step-dot"></div><span>Month 1–6: Collect raw failure data</span></div>
-                <div class="comp-step"><div class="comp-step-dot"></div><span>Month 7: Train custom weights</span></div>
-                <div class="comp-step"><div class="comp-step-dot"></div><span>Result: Blind during initial deployment</span></div>
-              </div>
-            </div>
-            <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--brick); font-weight: 600;">High barrier · Zero protection on Day 1</div>
+        <!-- Industry 5.0 -->
+        <div class="paradigm-card highlight">
+          <span class="paradigm-tag" style="color: var(--terracotta);">INDUSTRY 5.0 — HUMAN CENTRIC</span>
+          <p style="font-size: 0.88rem; color: var(--charcoal); margin-bottom: 1rem;">
+            Machines orbit around human judgment with plain-language recommendations and co-piloting.
+          </p>
+          <div class="paradigm-diagram-box">
+            <svg width="220" height="150" viewBox="0 0 220 150" fill="none">
+              <!-- Orbit lines -->
+              <ellipse cx="110" cy="75" rx="80" ry="45" stroke="#B8723B" stroke-width="1" stroke-dasharray="3 3" opacity="0.6" />
+              <!-- Orbiting Machines -->
+              <circle cx="35" cy="75" r="14" fill="#E2CDB2" stroke="#894A1D" stroke-width="1.5" />
+              <circle cx="110" cy="30" r="14" fill="#E2CDB2" stroke="#894A1D" stroke-width="1.5" />
+              <circle cx="185" cy="75" r="14" fill="#E2CDB2" stroke="#894A1D" stroke-width="1.5" />
+              <circle cx="110" cy="120" r="14" fill="#E2CDB2" stroke="#894A1D" stroke-width="1.5" />
+              <!-- Human Operator Center -->
+              <circle cx="110" cy="75" r="22" fill="#B8723B" />
+              <circle cx="110" cy="70" r="7" fill="#FFFBF5" />
+              <path d="M100 86 C100 78 120 78 120 86" stroke="#FFFBF5" stroke-width="2.5" />
+              <text x="110" y="76" font-family="JetBrains Mono" font-size="8" fill="#FFFBF5" text-anchor="middle" font-weight="700"></text>
+            </svg>
           </div>
+        </div>
+      </div>
 
-          <!-- Tenure Zero-Shot -->
-          <div class="comp-card comp-card--new">
-            <div>
-              <div class="comp-badge comp-badge--new">Tenure Foundation Model</div>
-              <div class="comp-headline">Zero-Shot from Minute One</div>
-              <p style="font-size: 0.95rem; color: #7A6552; line-height: 1.5;">Leverages pre-trained time-series foundation models to flag distribution deviations immediately on power-up.</p>
-              
-              <div class="comp-timeline">
-                <div class="comp-step"><div class="comp-step-dot"></div><span>Minute 1: Ingest UR5e official CAD/URDF docs</span></div>
-                <div class="comp-step"><div class="comp-step-dot"></div><span>Minute 2: Zero-shot telemetry deviation scoring</span></div>
-                <div class="comp-step"><div class="comp-step-dot"></div><span>Result: Immediate protection on brand new hardware</span></div>
-              </div>
-            </div>
-            <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--sage); font-weight: 600;">Instant protection · Gaining tenure over time</div>
-          </div>
+      <!-- 3 Pillar Markers -->
+      <div class="pillar-row">
+        <div class="pillar-chip">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M8 12h8"/></svg>
+          <span>HUMAN-CENTRICITY</span>
+        </div>
+        <div class="pillar-chip">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="m9 12 2 2 4-4"/></svg>
+          <span>OPERATIONAL RESILIENCE</span>
+        </div>
+        <div class="pillar-chip">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83"/></svg>
+          <span>SUSTAINABILITY</span>
         </div>
       </div>
     </section>
 
-    <!-- ======================================================================
-         SLIDE 6: THE FEEDBACK LOOP (THE TENURE PAYOFF)
-         ====================================================================== -->
-    <section class="slide slide--dark" data-slide="6">
-      <div class="slide-header">
-        <div class="slide-eyebrow">The Naming Payoff</div>
-        <h2 class="slide-title">The system literally gains tenure on the machine.</h2>
-        <p class="slide-tagline">
-          Every technician confirmation or correction permanently enriches that unit's isolated memory.
-        </p>
+    <!-- ----------------------------------------------------------------------
+         SLIDE 3: THE PROBLEM - SILOED MACHINERY (BLUSH TONE)
+         ---------------------------------------------------------------------- -->
+    <section class="slide" id="slide-3" data-index="3">
+      <div class="kicker" style="color: var(--rust);">[ 03 // THE PROBLEM ]</div>
+      <h2 class="headline" style="font-size: clamp(2rem, 3.8vw, 3.4rem); margin-bottom: 0.5rem;">
+        Dozens of vendors. Dozens of isolated monitors.
+      </h2>
+      <p class="supporting">
+        Operators drown in fragmented data and react to breakdowns instead of preventing them.
+      </p>
+
+      <div class="silos-cluster">
+        <!-- Silo 1 -->
+        <div class="silo-box">
+          <div>
+            <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+              <span class="silo-pulse-dot"></span>
+              <span style="font-family: var(--font-mono); font-size: 0.85rem; font-weight: 700;">UR5e Robotic Arm</span>
+            </div>
+            <p style="font-size: 0.8rem; color: rgba(51,36,21,0.75);">Proprietary Teach Pendant</p>
+          </div>
+          <div style="background: rgba(51,36,21,0.06); padding: 0.75rem; border-radius: 8px; font-family: var(--font-mono); font-size: 0.75rem;">
+            <code>FAULT 0x4A: Joint 3 Overheat</code>
+          </div>
+        </div>
+
+        <!-- Silo 2 -->
+        <div class="silo-box">
+          <div>
+            <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+              <span class="silo-pulse-dot"></span>
+              <span style="font-family: var(--font-mono); font-size: 0.85rem; font-weight: 700;">CNC Lathe Cell</span>
+            </div>
+            <p style="font-size: 0.8rem; color: rgba(51,36,21,0.75);">Vendor Controller Monitor</p>
+          </div>
+          <div style="background: rgba(51,36,21,0.06); padding: 0.75rem; border-radius: 8px; font-family: var(--font-mono); font-size: 0.75rem;">
+            <code>ALARM 204: Spindle Runout</code>
+          </div>
+        </div>
+
+        <!-- Silo 3 -->
+        <div class="silo-box">
+          <div>
+            <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+              <span class="silo-pulse-dot"></span>
+              <span style="font-family: var(--font-mono); font-size: 0.85rem; font-weight: 700;">Hydraulic Press #4</span>
+            </div>
+            <p style="font-size: 0.8rem; color: rgba(51,36,21,0.75);">Analog Gauge Cluster</p>
+          </div>
+          <div style="background: rgba(51,36,21,0.06); padding: 0.75rem; border-radius: 8px; font-family: var(--font-mono); font-size: 0.75rem;">
+            <code>VALVE PRESSURE DROP: 42 Bar</code>
+          </div>
+        </div>
+
+        <!-- Silo 4 -->
+        <div class="silo-box">
+          <div>
+            <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+              <span class="silo-pulse-dot"></span>
+              <span style="font-family: var(--font-mono); font-size: 0.85rem; font-weight: 700;">Conveyor Drive #2</span>
+            </div>
+            <p style="font-size: 0.8rem; color: rgba(51,36,21,0.75);">Isolated Inverter Terminal</p>
+          </div>
+          <div style="background: rgba(51,36,21,0.06); padding: 0.75rem; border-radius: 8px; font-family: var(--font-mono); font-size: 0.75rem;">
+            <code>BEARING HARMONIC VIB: 4.8 kHz</code>
+          </div>
+        </div>
       </div>
 
-      <div class="slide-body">
-        <div class="loop-wrapper">
-          <svg class="loop-svg" viewBox="0 0 800 400" fill="none">
-            <!-- Circular Flow Connectors -->
-            <path d="M 240 100 Q 400 30 560 100" stroke="#E2CDB2" stroke-width="2.5" stroke-dasharray="6 6" />
-            <path d="M 560 100 Q 680 200 560 300" stroke="#E2CDB2" stroke-width="2.5" stroke-dasharray="6 6" />
-            <path d="M 560 300 Q 400 370 240 300" stroke="#E2CDB2" stroke-width="2.5" stroke-dasharray="6 6" />
-            <path d="M 240 300 Q 120 200 240 100" stroke="#E2CDB2" stroke-width="2.5" stroke-dasharray="6 6" />
-
-            <!-- Step 1: Anomaly -->
-            <rect x="150" y="60" width="180" height="70" rx="12" fill="#FFFBF5" stroke="#B23A2E" stroke-width="2" />
-            <text x="240" y="94" text-anchor="middle" font-family="Fraunces" font-size="14" font-weight="700" fill="#332415">1. Anomaly Flagged</text>
-            <text x="240" y="112" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#7A6552">Joint 3 Torque Spike</text>
-
-            <!-- Step 2: Cited Diagnosis -->
-            <rect x="470" y="60" width="180" height="70" rx="12" fill="#FFFBF5" stroke="#B8723B" stroke-width="2" />
-            <text x="560" y="94" text-anchor="middle" font-family="Fraunces" font-size="14" font-weight="700" fill="#332415">2. Cited Diagnosis</text>
-            <text x="560" y="112" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#7A6552">Manual Sec 4.2 Citation</text>
-
-            <!-- Step 3: Feedback -->
-            <rect x="470" y="270" width="180" height="70" rx="12" fill="#FFFBF5" stroke="#5E8C61" stroke-width="2" />
-            <text x="560" y="304" text-anchor="middle" font-family="Fraunces" font-size="14" font-weight="700" fill="#332415">3. Human Feedback</text>
-            <text x="560" y="322" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#7A6552">Confirm / Correct Cause</text>
-
-            <!-- Step 4: Unit Tenure -->
-            <rect x="150" y="270" width="180" height="70" rx="12" fill="#FFFBF5" stroke="#B8723B" stroke-width="2" />
-            <text x="240" y="304" text-anchor="middle" font-family="Fraunces" font-size="14" font-weight="700" fill="#332415">4. Tenure Acquired</text>
-            <text x="240" y="322" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#5E8C61">Vector Ingestion Complete</text>
-
-            <!-- Center Badge -->
-            <circle cx="400" cy="200" r="48" fill="#332415" stroke="#E2CDB2" stroke-width="2" />
-            <text x="400" y="196" text-anchor="middle" font-family="Fraunces" font-size="16" font-weight="700" fill="#FFFBF5">TENURE</text>
-            <text x="400" y="214" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#B8723B">Unit Memory</text>
-          </svg>
-        </div>
+      <div style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--rust); font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+        <span>RESULT: UNPLANNED DOWNTIME • SCRAP MATERIAL SPOILAGE • OPERATOR FATIGUE</span>
       </div>
     </section>
 
-    <!-- ======================================================================
-         SLIDE 7: GROUNDED, NOT HALLUCINATED
-         ====================================================================== -->
-    <section class="slide" data-slide="7">
-      <div class="slide-header">
-        <div class="slide-eyebrow">Zero Hallucinations</div>
-        <h2 class="slide-title">Grounded in OEM documentation, not black-box guesses.</h2>
-        <p class="slide-tagline">
-          Every diagnosis is bound to exact page and section citations from the manufacturer manual.
-        </p>
+    <!-- ----------------------------------------------------------------------
+         SLIDE 4: THE SOLUTION - ONE LIVING ECOSYSTEM (CREAM)
+         ---------------------------------------------------------------------- -->
+    <section class="slide" id="slide-4" data-index="4">
+      <div class="kicker" style="color: var(--terracotta);">[ 04 // THE SOLUTION ]</div>
+      <h2 class="headline" style="font-size: clamp(2rem, 3.8vw, 3.4rem); margin-bottom: 0.5rem;">
+        One unified intelligence layer. One living ecosystem.
+      </h2>
+      <p class="supporting">
+        Tenure aggregates multi-vendor telemetry into a synchronized digital twin and collaborative foresight hub.
+      </p>
+
+      <div class="ecosystem-container">
+        <svg class="ecosystem-svg" viewBox="0 0 900 320" fill="none">
+          <!-- Central Hub -->
+          <circle cx="450" cy="160" r="70" fill="#FFFBF5" stroke="#B8723B" stroke-width="2.5" />
+          <circle cx="450" cy="160" r="54" fill="#F6EEE0" />
+          <text x="450" y="152" font-family="Fraunces" font-size="16" font-weight="800" fill="#332415" text-anchor="middle">TENURE</text>
+          <text x="450" y="172" font-family="JetBrains Mono" font-size="9" font-weight="600" fill="#B8723B" text-anchor="middle">INTELLIGENCE HUB</text>
+
+          <!-- Nodes: UR5e (Top Left), CNC (Bottom Left), Hydraulic (Top Right), Conveyor (Bottom Right) -->
+          <!-- UR5e -->
+          <rect x="80" y="30" width="180" height="60" rx="10" fill="#FFFBF5" stroke="#332415" stroke-width="1.2" />
+          <text x="100" y="55" font-family="Fraunces" font-size="13" font-weight="700" fill="#332415">UR5e 6-Axis Robot</text>
+          <text x="100" y="73" font-family="JetBrains Mono" font-size="9" fill="#5E8C61">● 10Hz TELEMETRY LIVE</text>
+          <path d="M260 60 Q 350 70 395 125" class="stream-line" />
+
+          <!-- CNC -->
+          <rect x="80" y="230" width="180" height="60" rx="10" fill="#FFFBF5" stroke="#332415" stroke-width="1.2" />
+          <text x="100" y="255" font-family="Fraunces" font-size="13" font-weight="700" fill="#332415">CNC Lathe Cell</text>
+          <text x="100" y="273" font-family="JetBrains Mono" font-size="9" fill="#5E8C61">● SPINDLE HARMONICS</text>
+          <path d="M260 260 Q 350 250 395 195" class="stream-line" />
+
+          <!-- Hydraulic Press -->
+          <rect x="640" y="30" width="180" height="60" rx="10" fill="#FFFBF5" stroke="#332415" stroke-width="1.2" />
+          <text x="660" y="55" font-family="Fraunces" font-size="13" font-weight="700" fill="#332415">Hydraulic Press #4</text>
+          <text x="660" y="73" font-family="JetBrains Mono" font-size="9" fill="#5E8C61">● 24H HEALTH PREDICTION</text>
+          <path d="M640 60 Q 550 70 505 125" class="stream-line" />
+
+          <!-- Conveyor -->
+          <rect x="640" y="230" width="180" height="60" rx="10" fill="#FFFBF5" stroke="#332415" stroke-width="1.2" />
+          <text x="660" y="255" font-family="Fraunces" font-size="13" font-weight="700" fill="#332415">Conveyor Drive #2</text>
+          <text x="660" y="273" font-family="JetBrains Mono" font-size="9" fill="#5E8C61">● THERMAL LOAD SYNC</text>
+          <path d="M640 260 Q 550 250 505 195" class="stream-line" />
+        </svg>
       </div>
+    </section>
 
-      <div class="slide-body">
-        <div class="citation-mockup">
-          <div class="citation-chip-demo">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/></svg>
-            <span>UR5e_Maintenance_Manual.pdf · Page 47 · Section 4.2</span>
-          </div>
+    <!-- ----------------------------------------------------------------------
+         SLIDE 5: THREE PRINCIPLES, BUILT IN (ASYMMETRIC 3-PANEL)
+         ---------------------------------------------------------------------- -->
+    <section class="slide" id="slide-5" data-index="5">
+      <div class="kicker" style="color: var(--terracotta);">[ 05 // CORE PRINCIPLES ]</div>
+      <h2 class="headline" style="font-size: clamp(2rem, 3.8vw, 3.4rem); margin-bottom: 0.5rem;">
+        Three Industry 5.0 principles, built into the core.
+      </h2>
+      <p class="supporting">
+        Not bolted on as an afterthought — engineered directly into the data and interaction model.
+      </p>
 
-          <div class="citation-quote-box">
-            <p class="citation-quote">
-              "Joint torque monitoring — When torque readings exceed 120% of rated maximum (150 Nm), the controller should initiate a protective stop. Sustained over-torque indicates mechanical obstruction or payload misconfiguration."
+      <div class="principles-grid">
+        <!-- Principle 1: Human-Centric AI Co-Pilot -->
+        <div class="principle-card">
+          <div>
+            <div class="principle-num">01 / HUMAN-CENTRICITY</div>
+            <h3 class="principle-title">AI Co-Pilot</h3>
+            <p class="principle-desc">
+              Plain-language recommendations with full technical citations. No automated shutdown surprises — humans decide and execute.
             </p>
           </div>
+          <div class="principle-widget">
+            <div style="color: var(--terracotta); font-weight: 700; margin-bottom: 4px;">CO-PILOT RECOMMENDATION</div>
+            <div style="color: var(--charcoal); font-size: 0.74rem; line-height: 1.35;">
+              "Schedule Joint 3 bearing relubrication within 48h to avoid harmonic runaway (92% conf)."
+            </div>
+          </div>
+        </div>
 
-          <div class="citation-meta-row">
-            <div><span>Matched Embedding Chunk: </span><span class="font-mono">#vec-ur5e-man-47-02</span></div>
-            <div><span>Retrieval Confidence: </span><span class="citation-confidence-tag">92.4% Match</span></div>
+        <!-- Principle 2: Continuous Adaptive Learning -->
+        <div class="principle-card">
+          <div>
+            <div class="principle-num">02 / RESILIENCE</div>
+            <h3 class="principle-title">Adaptive Learning</h3>
+            <p class="principle-desc">
+              Technician confirmation feedback sharpens anomaly models specifically for that factory's ambient environment and duty cycles.
+            </p>
+          </div>
+          <div class="principle-widget" style="text-align: center;">
+            <svg width="140" height="50" viewBox="0 0 140 50" fill="none">
+              <path d="M20 25 C 20 10, 120 10, 120 25 C 120 40, 20 40, 20 25" stroke="#B8723B" stroke-width="1.8" stroke-dasharray="3 3" />
+              <circle cx="20" cy="25" r="4" fill="#894A1D" />
+              <circle cx="120" cy="25" r="4" fill="#5E8C61" />
+              <text x="70" y="29" font-family="JetBrains Mono" font-size="8" fill="#332415" text-anchor="middle" font-weight="600">FEEDBACK LOOP</text>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Principle 3: Sustainability & Asset Life -->
+        <div class="principle-card">
+          <div>
+            <div class="principle-num">03 / SUSTAINABILITY</div>
+            <h3 class="principle-title">Asset Longevity</h3>
+            <p class="principle-desc">
+              Early micro-deviation detection prevents catastrophic component destruction, extending legacy machinery life and eliminating scrap.
+            </p>
+          </div>
+          <div class="principle-widget">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+              <span>ASSET LIFE EXTENSION</span>
+              <strong style="color: var(--sage);">+3.4 YRS</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>SCRAP REDUCTION</span>
+              <strong style="color: var(--sage);">-38%</strong>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ======================================================================
-         SLIDE 8: THE BUILD (TECH STACK)
-         ====================================================================== -->
-    <section class="slide" data-slide="8">
-      <div class="slide-header">
-        <div class="slide-eyebrow">Production Architecture</div>
-        <h2 class="slide-title">What we actually built for this live deployment.</h2>
-        <p class="slide-tagline">
-          Clean, decoupled services ready for enterprise scaling.
+    <!-- ----------------------------------------------------------------------
+         SLIDE 6: SEE IT LIVE (MINIMALIST PAUSE)
+         ---------------------------------------------------------------------- -->
+    <section class="slide" id="slide-6" data-index="6">
+      <div class="kicker" style="color: var(--terracotta);">[ 06 // PRODUCT DEMO ]</div>
+
+      <div class="live-content">
+        <h2 class="headline" style="font-size: clamp(2.8rem, 5.5vw, 5rem); line-height: 1.05; margin-bottom: 1.5rem;">
+          From reactive alerts to proactive collaboration.
+        </h2>
+        <p class="supporting" style="font-family: var(--font-display); font-style: italic; font-size: 1.8rem; color: var(--rust);">
+          Let’s see Tenure live on the factory floor.
         </p>
       </div>
 
-      <div class="slide-body">
-        <div class="stack-grid">
-          <div class="stack-chip">
-            <div class="stack-layer">Simulation Master</div>
-            <div class="stack-title">ProtoTwin + Python</div>
-            <p class="stack-desc">Physics-driven 6-DOF UR5e arm running kinematic trajectories and live torque injection.</p>
-          </div>
-
-          <div class="stack-chip">
-            <div class="stack-layer">Anomaly Layer</div>
-            <div class="stack-title">Time-Series Foundation</div>
-            <p class="stack-desc">Chronos / MOMENT foundation model providing zero-shot window deviation scoring at 20Hz.</p>
-          </div>
-
-          <div class="stack-chip">
-            <div class="stack-layer">Memory Layer</div>
-            <div class="stack-title">Qdrant Vector DB</div>
-            <p class="stack-desc">Isolated namespaces per serial number storing ingested manuals and confirmed feedback.</p>
-          </div>
-
-          <div class="stack-chip">
-            <div class="stack-layer">Backend Services</div>
-            <div class="stack-title">FastAPI & Python 3.11</div>
-            <p class="stack-desc">High-throughput asynchronous telemetry streaming, alert tiering, and LLM orchestration.</p>
-          </div>
-
-          <div class="stack-chip">
-            <div class="stack-layer">Technician Interface</div>
-            <div class="stack-title">React + Three.js / R3F</div>
-            <p class="stack-desc">60fps real-time 3D twin, Bento dashboard, 24h heatmap, and citation chatbot.</p>
-          </div>
-
-          <div class="stack-chip">
-            <div class="stack-layer">Compliance</div>
-            <div class="stack-title">Append-Only Audit Log</div>
-            <p class="stack-desc">Immutable history logs with PDF/CSV export for ISO regulatory and safety compliance.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ======================================================================
-         SLIDE 9: LIVE DEMO CUE
-         ====================================================================== -->
-    <section class="slide slide--dark" data-slide="9">
-      <div class="slide-body" style="height: 100%;">
-        <div class="demo-cue-wrap">
-          <svg class="demo-center-gear" viewBox="0 0 200 200" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="100" cy="100" r="70" strokeDasharray="4 6" />
-            <circle cx="100" cy="100" r="45" />
-            <circle cx="100" cy="100" r="20" fill="currentColor" opacity="0.2" />
-            <path d="M100 20v20M100 160v20M20 100h20M160 100h20M43 43l14 14M143 143l14 14M43 157l14-14M143 57l14-14" strokeWidth="3" />
-          </svg>
-          <h2 class="demo-headline">Let's see Tenure live.</h2>
-          <div class="demo-status-pill">
-            <span class="demo-pulse-ring"></span>
-            <span>UR5e Live Telemetry: 60 FPS · Standing By</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ======================================================================
-         SLIDE 10: VISION & SCALE
-         ====================================================================== -->
-    <section class="slide" data-slide="10">
-      <div class="slide-header">
-        <div class="slide-eyebrow">The Vision</div>
-        <h2 class="slide-title">From one robot arm to enterprise fleet intelligence.</h2>
-        <p class="slide-tagline">
-          Scaling unit-level tenure across thousand-machine factories without data contamination.
-        </p>
-      </div>
-
-      <div class="slide-body">
-        <div class="vision-grid">
-          <div class="vision-card">
-            <div class="vision-num font-mono">01</div>
-            <div class="vision-title">Fleet-Wide Aggregation</div>
-            <p class="vision-desc">Overseer dashboards tracking health scores and degradation rates across entire global facilities.</p>
-          </div>
-
-          <div class="vision-card">
-            <div class="vision-num font-mono">02</div>
-            <div class="vision-title">Regulatory Audit Trail</div>
-            <p class="vision-desc">Every flagged torque spike, LLM citation, and human confirmation exported as ISO-compliant PDF logs.</p>
-          </div>
-
-          <div class="vision-card">
-            <div class="vision-num font-mono">03</div>
-            <div class="vision-title">Zero-Contamination Tenure</div>
-            <p class="vision-desc">Private per-unit memory guarantees proprietary factory secrets never leak across customer tenants.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ======================================================================
-         SLIDE 11: CLOSING & SUMMARY
-         ====================================================================== -->
-    <section class="slide" data-slide="11">
-      <div class="title-hero">
-        <div class="slide-eyebrow">Tenure · Industrial AI</div>
-        <h1 class="brand-mark" style="font-size: clamp(3.5rem, 6.5vw, 6.8rem);">
-          Machines don’t forget.<br />
-          <span>Now technicians don’t either.</span>
-        </h1>
-        <p class="title-thesis" style="margin-bottom: 2rem;">
-          Tenure turns fleeting sensor telemetry into permanent, cited industrial intelligence.
-        </p>
-        <div class="title-pill-row">
-          <div class="title-pill">Team Tenure</div>
-          <div class="title-pill">Hackathon 2026</div>
-          <div class="title-pill font-mono" style="color: var(--terracotta);">tenure.dev</div>
-        </div>
-      </div>
-
-      <svg class="slide-gear-bg" viewBox="0 0 400 400" fill="none" stroke="currentColor" strokeWidth="1.2">
-        <circle cx="200" cy="200" r="140" strokeDasharray="6 8" />
-        <circle cx="200" cy="200" r="90" />
-        <circle cx="200" cy="200" r="40" fill="currentColor" opacity="0.1" />
+      <!-- Single Centered / Off-center Graphic Motif -->
+      <svg class="live-gear-art gear-spin" viewBox="0 0 100 100" fill="none" stroke="currentColor">
+        <circle cx="50" cy="50" r="32" stroke-width="1.8" />
+        <circle cx="50" cy="50" r="16" stroke-width="1.2" stroke-dasharray="2 2" />
+        <circle cx="50" cy="50" r="5" fill="currentColor" />
+        <!-- 8 Gear Teeth -->
+        <path d="M47 14 h6 v5 h-6 z M47 81 h6 v5 h-6 z M14 47 h5 v6 h-5 z M81 47 h5 v6 h-5 z
+                 M24 24 h5 v5 h-5 z M71 71 h5 v5 h-5 z M24 71 h5 v5 h-5 z M71 24 h5 v5 h-5 z" fill="currentColor" />
       </svg>
+    </section>
+
+    <!-- ----------------------------------------------------------------------
+         SLIDE 7: THE THESIS / CLOSING STATEMENT (TYPOGRAPHIC ART)
+         ---------------------------------------------------------------------- -->
+    <section class="slide" id="slide-7" data-index="7">
+      <div class="kicker" style="color: var(--terracotta);">[ 07 // THE THESIS ]</div>
+
+      <div class="thesis-art">
+        <p class="thesis-quote">
+          “A bridge between <em>human expertise</em> and machine intelligence.”
+        </p>
+
+        <!-- Connecting Arc Diagram -->
+        <div class="arc-diagram">
+          <svg viewBox="0 0 400 60" fill="none">
+            <!-- Human Node -->
+            <circle cx="40" cy="30" r="14" fill="#FFFBF5" stroke="#B8723B" stroke-width="2" />
+            <circle cx="40" cy="27" r="4" fill="#B8723B" />
+            <path d="M34 38 C34 33 46 33 46 38" stroke="#B8723B" stroke-width="1.5" />
+            <text x="40" y="55" font-family="JetBrains Mono" font-size="8" fill="#332415" text-anchor="middle" font-weight="600">HUMAN EXPERTISE</text>
+
+            <!-- Connecting Arc with Tooth Pattern -->
+            <path d="M 60 30 Q 200 5 340 30" stroke="#B8723B" stroke-width="2" stroke-dasharray="4 3" />
+
+            <!-- Machine Node -->
+            <circle cx="360" cy="30" r="14" fill="#FFFBF5" stroke="#894A1D" stroke-width="2" />
+            <rect x="355" y="25" width="10" height="10" rx="2" fill="#894A1D" />
+            <text x="360" y="55" font-family="JetBrains Mono" font-size="8" fill="#332415" text-anchor="middle" font-weight="600">MACHINE TWIN</text>
+          </svg>
+        </div>
+
+        <p style="font-family: var(--font-body); font-size: 1.15rem; color: rgba(51,36,21,0.85); max-width: 38ch; margin: 1.5rem auto 0;">
+          Turning reactive maintenance into lasting institutional tenure.
+        </p>
+      </div>
+    </section>
+
+    <!-- ----------------------------------------------------------------------
+         SLIDE 8: THANK YOU / CLOSE (DARK BOOKEND)
+         ---------------------------------------------------------------------- -->
+    <section class="slide" id="slide-8" data-index="8">
+      <!-- Background Ambient Gear Silhouette -->
+      <svg class="bg-gear-footer gear-spin-reverse" viewBox="0 0 100 100" fill="none" stroke="currentColor">
+        <circle cx="50" cy="50" r="34" stroke-width="2" />
+        <circle cx="50" cy="50" r="18" stroke-width="1.5" stroke-dasharray="3 3" />
+        <circle cx="50" cy="50" r="6" fill="currentColor" />
+        <path d="M47 12 h6 v6 h-6 z M47 82 h6 v6 h-6 z M12 47 h6 v6 h-6 z M82 47 h6 v6 h-6 z
+                 M23 23 h5 v5 h-5 z M72 72 h5 v5 h-5 z M23 72 h5 v5 h-5 z M72 23 h5 v5 h-5 z" fill="currentColor" />
+      </svg>
+
+      <div class="kicker" style="color: var(--terracotta);">[ 08 // CLOSE ]</div>
+
+      <div style="margin-top: auto; margin-bottom: auto; max-width: 65vw; z-index: 2;">
+        <h2 class="brand-title" style="font-size: clamp(4rem, 9vw, 7.5rem); margin-bottom: 1rem;">TENURE</h2>
+
+        <div class="contrast-badge">
+          <span>REACTIVE BREAKDOWNS</span>
+          <span class="accent">➔</span>
+          <span style="color: var(--paper);">PROACTIVE COLLABORATION</span>
+        </div>
+
+        <p style="font-size: clamp(1.1rem, 2vw, 1.5rem); color: var(--blush); max-width: 38ch; line-height: 1.4;">
+          The human-centric predictive maintenance platform built for the Industry 5.0 era.
+        </p>
+      </div>
+
+      <div class="footer-meta">
+        <div>tenure.industrial // contact@tenure.io</div>
+        <div>BUILT WITH INDUSTRY 5.0 PRINCIPLES</div>
+      </div>
     </section>
 
   </main>
 
-  <!-- ==========================================================================
-       Global Deck Navigation Controls & Counter
-       ========================================================================== -->
-  <footer class="deck-nav">
-    <div class="deck-hint" id="deckHint">
-      <span>Use</span> <kbd>→</kbd> <kbd>←</kbd> <span>or spacebar</span>
-    </div>
-
-    <div class="deck-dots" id="dotsContainer">
-      <!-- Generated via JS -->
-    </div>
-
-    <div class="deck-counter font-mono" id="slideCounter">
-      1 / 11
-    </div>
-  </footer>
-
-  <!-- ==========================================================================
-       Deck Navigation & Keyboard Controller Logic
-       ========================================================================== -->
+  <!-- ========================================================================
+       SLIDE DECK ENGINE (Keyboard, Click, Swipe, HUD)
+       ======================================================================== -->
   <script>
     (function () {
-      const slides = document.querySelectorAll('.slide');
+      const slides = Array.from(document.querySelectorAll('.slide'));
+      const dotsContainer = document.getElementById('dots-container');
+      const counterEl = document.getElementById('slide-counter');
+      const navHint = document.getElementById('nav-hint');
+      const prevBtn = document.getElementById('prev-btn');
+      const nextBtn = document.getElementById('next-btn');
+
+      let currentIdx = 0;
       const totalSlides = slides.length;
-      let currentSlide = 0;
-      let hasInteracted = false;
 
-      const dotsContainer = document.getElementById('dotsContainer');
-      const slideCounter = document.getElementById('slideCounter');
-      const deckHint = document.getElementById('deckHint');
-      const fullscreenBtn = document.getElementById('fullscreenBtn');
-
-      // Generate Navigation Dots
+      // Build Progress Dots
       slides.forEach((_, idx) => {
         const dot = document.createElement('div');
-        dot.classList.add('deck-dot');
+        dot.classList.add('dot');
         if (idx === 0) dot.classList.add('active');
+        dot.setAttribute('title', `Go to slide ${idx + 1}`);
         dot.addEventListener('click', () => goToSlide(idx));
         dotsContainer.appendChild(dot);
       });
 
-      const dots = document.querySelectorAll('.deck-dot');
+      const dots = Array.from(document.querySelectorAll('.dot'));
 
-      function updateSlideUI() {
-        slides.forEach((slide, idx) => {
-          if (idx === currentSlide) {
-            slide.classList.add('active');
-          } else {
-            slide.classList.remove('active');
-          }
-        });
+      function updateSlide(newIdx) {
+        if (newIdx < 0) newIdx = 0;
+        if (newIdx >= totalSlides) newIdx = totalSlides - 1;
 
-        dots.forEach((dot, idx) => {
-          if (idx === currentSlide) {
-            dot.classList.add('active');
-          } else {
-            dot.classList.remove('active');
-          }
-        });
-
-        slideCounter.textContent = `${currentSlide + 1} / ${totalSlides}`;
-
-        if (!hasInteracted && currentSlide > 0) {
-          hasInteracted = true;
-          deckHint.classList.add('fade-out');
+        if (newIdx !== 0 && navHint) {
+          navHint.classList.add('fade-out');
         }
+
+        slides[currentIdx].classList.remove('active');
+        dots[currentIdx].classList.remove('active');
+
+        currentIdx = newIdx;
+
+        slides[currentIdx].classList.add('active');
+        dots[currentIdx].classList.add('active');
+
+        counterEl.textContent = `${String(currentIdx + 1).padStart(2, '0')} / ${String(totalSlides).padStart(2, '0')}`;
       }
 
-      function goToSlide(index) {
-        if (index >= 0 && index < totalSlides) {
-          currentSlide = index;
-          updateSlideUI();
-        }
-      }
+      function nextSlide() { updateSlide(currentIdx + 1); }
+      function prevSlide() { updateSlide(currentIdx - 1); }
+      function goToSlide(idx) { updateSlide(idx); }
 
-      function nextSlide() {
-        if (currentSlide < totalSlides - 1) {
-          goToSlide(currentSlide + 1);
-        }
-      }
-
-      function prevSlide() {
-        if (currentSlide > 0) {
-          goToSlide(currentSlide - 1);
-        }
-      }
-
-      // Keyboard Controls
+      // Keyboard Listeners
       window.addEventListener('keydown', (e) => {
-        if (['ArrowRight', 'Space', 'PageDown', 'KeyL'].includes(e.code)) {
+        if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
           e.preventDefault();
           nextSlide();
-        } else if (['ArrowLeft', 'PageUp', 'KeyH'].includes(e.code)) {
+        } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
           e.preventDefault();
           prevSlide();
-        } else if (e.code === 'Home') {
+        } else if (e.key === 'Home') {
           e.preventDefault();
           goToSlide(0);
-        } else if (e.code === 'End') {
+        } else if (e.key === 'End') {
           e.preventDefault();
           goToSlide(totalSlides - 1);
-        } else if (e.code === 'KeyF') {
-          e.preventDefault();
-          toggleFullscreen();
+        } else if (e.key.toLowerCase() === 'f') {
+          toggleFullScreen();
         }
       });
 
-      // Touch / Swipe Navigation
-      let touchStartX = 0;
-      let touchEndX = 0;
+      // Navigation Buttons
+      prevBtn.addEventListener('click', prevSlide);
+      nextBtn.addEventListener('click', nextSlide);
 
-      window.addEventListener('touchstart', (e) => {
-        touchStartX = e.changedTouches[0].screenX;
-      }, { passive: true });
-
-      window.addEventListener('touchend', (e) => {
-        touchEndX = e.changedTouches[0].screenX;
-        handleSwipe();
-      }, { passive: true });
-
-      function handleSwipe() {
-        const threshold = 50;
-        if (touchEndX < touchStartX - threshold) {
-          nextSlide();
-        } else if (touchEndX > touchStartX + threshold) {
-          prevSlide();
-        }
-      }
-
-      // Fullscreen Presenter Mode
-      function toggleFullscreen() {
+      // Fullscreen Helper
+      function toggleFullScreen() {
         if (!document.fullscreenElement) {
           document.documentElement.requestFullscreen().catch(() => {});
         } else {
           if (document.exitFullscreen) {
-            document.exitFullscreen().catch(() => {});
+            document.exitFullscreen();
           }
         }
       }
 
-      fullscreenBtn.addEventListener('click', toggleFullscreen);
+      // Touch / Swipe Support
+      let touchStartX = 0;
+      let touchStartY = 0;
+
+      window.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+        touchStartY = e.changedTouches[0].screenY;
+      }, { passive: true });
+
+      window.addEventListener('touchend', (e) => {
+        const diffX = e.changedTouches[0].screenX - touchStartX;
+        const diffY = e.changedTouches[0].screenY - touchStartY;
+        if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 40) {
+          if (diffX < 0) nextSlide();
+          else prevSlide();
+        }
+      }, { passive: true });
     })();
   </script>
 </body>
