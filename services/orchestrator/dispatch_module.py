@@ -497,7 +497,7 @@ def initiate_procurement(
             {
                 "step": 4,
                 "label": "Financial Authorization Audit",
-                "detail": f"Total PO Commitment: ${total_cost:,.2f} USD. Projected downtime cost avoided: ${38500:,.0f} USD.",
+                "detail": f"Total PO Commitment: ₹{total_cost:,.2f} INR. Projected downtime cost avoided: ₹32,00,000 INR.",
             },
             {
                 "step": 5,

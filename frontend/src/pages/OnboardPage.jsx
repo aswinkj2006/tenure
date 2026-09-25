@@ -76,7 +76,7 @@ const INBUILT_MODELS = [
     scenarioId: 'availability',
     scenarioTitle: 'Scenario 2: Technician Availability Fallback',
     scenarioBadge: 'Autonomous Skill Cascade',
-    scenarioDesc: 'Top specialist Sarah Chen (98% match) is Busy on another cell. Agent automatically cascades to next best qualified available engineer Marcus Vance to prevent $1,200/hr downtime.',
+    scenarioDesc: 'Top specialist Sarah Chen (98% match) is Busy on another cell. Agent automatically cascades to next best qualified available engineer Marcus Vance to prevent ₹1,00,000/hr downtime.',
     manual_text: `### KUKA KR 10 Cybertech R1420 Technical Datasheet\n1. Mechanical Architecture: 6-axis industrial articulated robot.\n2. Rated Payload: 10.0 kg. Maximum Reach: 1,420 mm.\n3. Repeatability: ±0.04 mm.\n4. Nominal Joint Torques: Axis 1: 280 Nm; Axis 2: 320 Nm; Axis 3: 210 Nm; Axis 5: 55 Nm.\n5. Lubrication: Castrol Optimol Optigear Synthetic A6 every 10,000 hrs.`,
   },
   {
@@ -110,7 +110,7 @@ const INBUILT_MODELS = [
     scenarioId: 'telemetry',
     scenarioTitle: 'Scenario 4: Live Telemetry & Economic Yield',
     scenarioBadge: 'Real-time Profit & Risk Model',
-    scenarioDesc: 'High-speed assembly baseline. Real-time yield calculator displays $450/hr profit generation, expected repair in 4,820 hrs, and $32,400 saved by zero-shot detector.',
+    scenarioDesc: 'High-speed assembly baseline. Real-time yield calculator displays ₹37,500/hr profit generation, expected repair in 4,820 hrs, and ₹27,00,000 saved by zero-shot detector.',
     manual_text: `### ABB IRB 1200-5/0.9 Technical Specifications\n1. Mechanical Architecture: Compact 6-axis industrial robot.\n2. Rated Payload: 5.0 kg. Working Range: 901 mm.\n3. Cycle Time: Fast working envelope machine tending.\n4. Gear Lubricant: Shell Omala S4 WE 320 every 6,000 operational hours.\n5. Rated Radial Seals: Viton seal kit Part #ABB-SEAL-1200.`,
   },
 ];

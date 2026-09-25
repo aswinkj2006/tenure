@@ -163,10 +163,10 @@ Retrieved technical documentation context:
 
 INSTRUCTIONS:
 1. Answer the technician directly, accurately, and authoritatively using the live telemetry and ML predictive intelligence provided above.
-2. If the user asks about "downtime", state the exact expected downtime in hours (from the Downtime & Financial Impact Assessment), explain why, and state the financial revenue risk ($2,400/hr).
+2. If the user asks about "downtime", state the exact expected downtime in hours (from the Downtime & Financial Impact Assessment), explain why, and state the financial revenue risk (₹2,00,000/hr in Indian Rupees).
 3. If the user asks about "complaints" or "incidents", state the exact number of logged complaints (total and active), summarize recent incidents, and detail the recurrence history and previous repair attempts.
 4. If the user asks about sensor readings, ML health, or RUL, quote the exact numerical figures and assess whether they violate operational bounds.
-5. Reference any relevant technical documentation sections where applicable. Keep the tone professional, concise, and engineer-grade."""
+5. Reference any relevant technical documentation sections where applicable. Always quote monetary impact in Indian Rupees (₹). Keep the tone professional, concise, and engineer-grade."""
 
         clients = self._get_candidate_clients()
         models = [PRIMARY_MODEL, BACKUP_MODEL] + [m for m in FALLBACK_MODELS if m not in (PRIMARY_MODEL, BACKUP_MODEL)]
@@ -194,7 +194,7 @@ INSTRUCTIONS:
                 f"### Expected Downtime Assessment for {machine_id}\n\n"
                 f"- **Expected Imminent Downtime:** **4.5 to 5.5 hours** for scheduled whole-unit harmonic drive replacement and zero-point calibration.\n"
                 f"- **Cumulative Downtime This Month:** **14.8 hours** across 3 recurring stoppage incidents.\n"
-                f"- **Financial Downtime Risk:** Operating at **$2,400 / hour** downtime loss rate, representing approximately **$12,000 USD** in production revenue at risk.\n\n"
+                f"- **Financial Downtime Risk:** Operating at **₹2,00,000 / hour** downtime loss rate, representing approximately **₹9,00,000 INR** in production revenue at risk.\n\n"
                 f"**Recommendation:** Keep the kinetic safety hold engaged and approve the whole-unit drive replacement in the Supervisor Action Center."
             )
         elif "complaint" in low_msg or "incident" in low_msg:

@@ -23,6 +23,7 @@ import { toast } from 'sonner';
 import RobotTwin from '../components/RobotTwin/RobotTwin';
 import useSensorStore from '../stores/sensorStore';
 import { sendChat, submitFeedback, getAnomalies } from '../api/client';
+import MarkdownMessage from '../components/common/MarkdownMessage';
 import './TechnicianPortal.css';
 
 export default function TechnicianPortal() {
@@ -270,8 +271,12 @@ export default function TechnicianPortal() {
                     <span>{m.sender === 'user' ? 'Technician' : 'Tenure AI Engine'}</span>
                     <span className="message-time">{m.ts}</span>
                   </div>
-                  <div className="message-body" style={{ whiteSpace: 'pre-wrap' }}>
-                    {m.text}
+                  <div className="message-body">
+                    {m.sender === 'user' ? (
+                      <div style={{ whiteSpace: 'pre-wrap' }}>{m.text}</div>
+                    ) : (
+                      <MarkdownMessage content={m.text} />
+                    )}
                   </div>
                   {m.citations && m.citations.length > 0 && (
                     <div className="message-citations">

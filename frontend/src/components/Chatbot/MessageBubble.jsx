@@ -1,4 +1,5 @@
 import CitationChip from './CitationChip';
+import MarkdownMessage from '../common/MarkdownMessage';
 import { format } from 'date-fns';
 
 export default function MessageBubble({ message, showFeedback, feedbackControls }) {
@@ -13,7 +14,11 @@ export default function MessageBubble({ message, showFeedback, feedbackControls 
   return (
     <div className={`message ${roleClass} ${isError ? 'message--error' : ''}`}>
       <div className="message__bubble">
-        {content}
+        {role === 'assistant' ? (
+          <MarkdownMessage content={content} />
+        ) : (
+          content
+        )}
       </div>
 
       {/* Citations */}

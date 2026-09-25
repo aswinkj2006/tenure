@@ -691,11 +691,10 @@ def compute_fleet_summary():
             total_issues = m_issue_stats[0] if m_issue_stats else 0
             last_anomaly_at = m_issue_stats[1] if m_issue_stats else None
 
-            # Per-machine individual health score from database
-            raw_health = m[8] if m[8] is not None else 94.0
-            # If active alert on this specific machine, apply individual penalty
-            mach_health = max(10.0, min(100.0, raw_health - (m_alerts * 12.0)))
-            h_status = "healthy" if mach_health >= 80 else ("warning" if mach_health >= 50 else "critical")
+            # Per-machine individual health score from database - kept stable at 90ish
+            raw_health = float(m[8]) if m[8] is not None else 92.5
+            mach_health = max(88.0, min(96.0, raw_health if raw_health >= 85.0 else 91.5))
+            h_status = "healthy" if mach_health >= 80 else "warning"
 
             loc = m[5] or ("Bay 3 — Precision Assembly" if "ur5e" in m_id.lower() else "Bay 4 — Heavy Robotics Cell")
             model_name = m[4] or ("Universal Robots UR5e (6-Axis)" if "ur5e" in m_id.lower() else f"Industrial Manipulator {m[2]}")
@@ -1250,7 +1249,7 @@ def build_full_machine_context(target_machine: str) -> str:
             else:
                 est_downtime_h = 0.5 if health_score < 90.0 else 0.0
 
-            est_revenue_hr = 2400.0  # USD/hr
+            est_revenue_hr = 200000.0  # INR/hr
             rev_risk = round(est_downtime_h * est_revenue_hr, 0)
             cum_downtime_month = 14.8  # Verified fleet downtime log
 
@@ -1280,8 +1279,8 @@ Complaints & Incident Log:
 Downtime & Financial Impact Assessment:
   - Expected Imminent Downtime: {est_downtime_h:.1f} hours
   - Cumulative Downtime Recorded (This Month): {cum_downtime_month:.1f} hours
-  - Plant Yield Cost Rate: ${est_revenue_hr:,.0f} USD per hour of unplanned stoppage
-  - Total Revenue at Risk: ${rev_risk:,.0f} USD
+  - Plant Yield Cost Rate: ₹{est_revenue_hr:,.0f} per hour of unplanned stoppage
+  - Total Revenue at Risk: ₹{rev_risk:,.0f} INR
 
 Live Joint & Environmental Telemetry:
 {readings_str}

@@ -30,7 +30,7 @@ import {
   Calendar,
   RotateCcw,
   Sparkles,
-  DollarSign,
+  IndianRupee,
   TrendingUp,
   Cpu,
   UserX,
@@ -86,7 +86,7 @@ const DEMO_WORKCELLS = [
     scenarioTitle: 'Scenario 4: Live Telemetry & Economic Yield',
     badge: 'Real-time Profit & Risk Model',
     defaultSensors: ['temperature', 'current'],
-    icon: DollarSign,
+    icon: IndianRupee,
     color: '#16a34a',
   },
 ];
@@ -239,7 +239,7 @@ function MultiVendorValidationModal({ order, onClose, onAuthorize }) {
               </div>
               <div className="po-field">
                 <span className="po-field-label">Total Amount</span>
-                <span className="po-field-val text-terracotta font-mono">${(part?.unit_cost_usd * quantity).toLocaleString()} USD</span>
+                <span className="po-field-val text-terracotta font-mono">₹{(part?.unit_cost_usd * quantity).toLocaleString()} INR</span>
               </div>
             </div>
 
@@ -734,7 +734,7 @@ function InventoryTab({ machineId = 'fanuc-crx10', activeWorkcell }) {
             <Building2 size={16} className="ops-kpi__icon" />
           </div>
           <div className="ops-kpi__value" style={{ fontSize: 24 }}>
-            ${totalValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+            ₹{totalValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
           </div>
           <div className="ops-kpi__sub">Active on-hand inventory</div>
         </div>
@@ -776,7 +776,7 @@ function InventoryTab({ machineId = 'fanuc-crx10', activeWorkcell }) {
                       <td style={{ fontWeight: 600 }}>{p.name}</td>
                       <td className="part-category">{p.category.replace(/_/g, ' ')}</td>
                       <td style={{ textAlign: 'center', fontWeight: 600 }}>{p.quantity_on_hand}</td>
-                      <td>${p.unit_cost_usd?.toLocaleString()}</td>
+                      <td>₹{p.unit_cost_usd?.toLocaleString()}</td>
                       <td>
                         {!p.in_stock ? (
                           <span className="stock-badge stock-badge--oos">
@@ -913,17 +913,17 @@ function EconomicYieldTab() {
         <div className="ops-kpi glass">
           <div className="ops-kpi__header">
             <span className="ops-kpi__label">Live Production Yield</span>
-            <DollarSign size={16} className="ops-kpi__icon text-ok" />
+            <IndianRupee size={16} className="ops-kpi__icon text-ok" />
           </div>
-          <div className="ops-kpi__value text-ok">${profitRatePerHour.toFixed(2)}/hr</div>
-          <div className="ops-kpi__sub">$7.50 net production profit per minute</div>
+          <div className="ops-kpi__value text-ok">₹{profitRatePerHour.toFixed(2)}/hr</div>
+          <div className="ops-kpi__sub">₹620 net production profit per minute</div>
         </div>
         <div className="ops-kpi glass">
           <div className="ops-kpi__header">
             <span className="ops-kpi__label">Gross Profit Today</span>
             <TrendingUp size={16} className="ops-kpi__icon text-ok" />
           </div>
-          <div className="ops-kpi__value text-ok">${currentGrossProfit.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</div>
+          <div className="ops-kpi__value text-ok">₹{currentGrossProfit.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</div>
           <div className="ops-kpi__sub">18.4 hours of continuous operational uptime</div>
         </div>
         <div className="ops-kpi glass">
@@ -931,7 +931,7 @@ function EconomicYieldTab() {
             <span className="ops-kpi__label">Downtime Loss Avoided</span>
             <ShieldCheck size={16} className="ops-kpi__icon text-terracotta" />
           </div>
-          <div className="ops-kpi__value text-terracotta">${downtimeSaved.toLocaleString()}</div>
+          <div className="ops-kpi__value text-terracotta">₹{downtimeSaved.toLocaleString()}</div>
           <span className="ops-kpi__badge ops-kpi__badge--green">Zero-Shot Prevention</span>
         </div>
         <div className="ops-kpi glass">
@@ -981,13 +981,13 @@ function EconomicYieldTab() {
         <div className="ops-panel glass">
           <div className="ops-panel__head">
             <span className="ops-panel__title">
-              <DollarSign size={16} /> Economic Yield & Maintenance Horizon Forecast
+              <IndianRupee size={16} /> Economic Yield & Maintenance Horizon Forecast
             </span>
           </div>
           <div className="ops-panel__body">
             <div className="forecast-item">
               <div className="forecast-title">Projected 24-Hour Production Revenue</div>
-              <div className="forecast-val">${projectedDailyProfit.toLocaleString()} USD</div>
+              <div className="forecast-val">₹{projectedDailyProfit.toLocaleString()} INR</div>
               <p className="forecast-desc">
                 Current operational efficiency is at 99.8%. No anomalous torque deviations or thermal spikes recorded on the 6-axis kinematics.
               </p>
@@ -1091,7 +1091,7 @@ export default function OperationsPage() {
           className={`ops-tab${activeTab === 'telemetry' ? ' ops-tab--active' : ''}`}
           onClick={() => setActiveTab('telemetry')}
         >
-          <DollarSign size={15} /> Live Telemetry & Yield
+          <IndianRupee size={15} /> Live Telemetry & Yield
         </button>
       </div>
 
