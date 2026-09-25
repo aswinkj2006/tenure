@@ -1,0 +1,97 @@
+/* ============================================
+   Tenure — Glassmorphism & Atmosphere System
+   Warm, frosted glass floating on warm surfaces
+   ============================================ */
+
+/* Base Glass Surface */
+.glass {
+  background: rgba(255, 251, 245, 0.58);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  box-shadow: 
+    0 8px 32px rgba(51, 36, 21, 0.08),
+    0 1px 2px rgba(51, 36, 21, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  border-radius: var(--radius-card, 20px);
+  position: relative;
+  transform: translateZ(0);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+/* Glass Strong (for main cards, modals, command palette) */
+.glass-strong {
+  background: rgba(255, 251, 245, 0.78);
+  backdrop-filter: blur(22px) saturate(150%);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  transform: translateZ(0);
+  box-shadow: 
+    0 12px 40px rgba(51, 36, 21, 0.12),
+    0 2px 4px rgba(51, 36, 21, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+/* Glass Subtle (for chips, badges, HUD overlays, tooltips) */
+.glass-subtle {
+  background: rgba(255, 251, 245, 0.42);
+  backdrop-filter: blur(12px) saturate(120%);
+  -webkit-backdrop-filter: blur(12px) saturate(120%);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow: 
+    0 4px 16px rgba(51, 36, 21, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+/* Specular cursor sheen tracking */
+.glass-sheen {
+  --mx: 50%;
+  --my: 50%;
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-sheen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle 280px at var(--mx) var(--my), rgba(255, 255, 255, 0.45), transparent 75%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 1;
+}
+
+.glass-sheen:hover::after {
+  opacity: 1;
+}
+
+/* Fallback for browsers without backdrop-filter or when Reduce Effects is enabled */
+@supports not (backdrop-filter: blur(20px)) {
+  .glass {
+    background: #FFFBF5;
+    border: 1px solid var(--blush, #E2CDB2);
+  }
+  .glass-strong {
+    background: #FFFFFF;
+    border: 1px solid var(--blush, #E2CDB2);
+  }
+  .glass-subtle {
+    background: #F8F3EB;
+    border: 1px solid var(--blush, #E2CDB2);
+  }
+}
+
+body.reduce-effects .glass,
+body.reduce-effects .glass-strong,
+body.reduce-effects .glass-subtle {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background: var(--surface, #FFFBF5) !important;
+  border-color: var(--blush, #E2CDB2) !important;
+  box-shadow: var(--shadow-card, 0 2px 8px rgba(51, 36, 21, 0.06)) !important;
+}
+
+body.reduce-effects .glass-sheen::after {
+  display: none !important;
+}

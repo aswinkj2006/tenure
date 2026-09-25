@@ -1,0 +1,246 @@
+/* ============================================
+   Tenure — Dashboard Page v2
+   Bento Grid: Fleet stats, compact live twin, charts, suggestions
+   ============================================ */
+
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6, 24px);
+  padding-bottom: var(--space-8, 32px);
+}
+
+/* ── Hero ── */
+.dashboard-hero {
+  padding: 24px 28px;
+  background: var(--surface, #FAF8F5);
+  border: 1px solid var(--blush, #E8E2D9);
+  border-radius: var(--radius-card, 12px);
+  box-shadow: var(--shadow-card, 0 2px 8px rgba(44, 39, 36, 0.04));
+  position: relative;
+  overflow: hidden;
+}
+
+.dashboard-hero__text {
+  font-family: var(--font-heading, 'Fraunces', serif);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--charcoal, #2C2724);
+  line-height: 1.3;
+}
+
+.dashboard-hero__sub {
+  font-size: 0.9rem;
+  color: var(--text-secondary, #5C554E);
+  margin-top: 6px;
+}
+
+.dashboard-hero__watermark {
+  position: absolute;
+  top: -24px;
+  right: -24px;
+  width: 140px;
+  height: 140px;
+  color: var(--terracotta, #D97757);
+  opacity: 0.06;
+  pointer-events: none;
+}
+
+/* ── Stats bar ── */
+.fleet-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.fleet-stat {
+  background: var(--surface, #FAF8F5);
+  border: 1px solid var(--blush, #E8E2D9);
+  border-radius: var(--radius-card, 12px);
+  box-shadow: var(--shadow-card, 0 2px 8px rgba(44, 39, 36, 0.04));
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fleet-stat__label {
+  font-size: 0.8rem;
+  color: var(--text-secondary, #5C554E);
+  font-weight: 500;
+}
+
+.fleet-stat__value {
+  font-family: var(--font-heading, 'Fraunces', serif);
+  font-size: 1.85rem;
+  font-weight: 600;
+  color: var(--charcoal, #2C2724);
+  line-height: 1;
+}
+
+.fleet-stat__value--ok {
+  color: var(--ok, #5E8C61);
+}
+
+.fleet-stat__value--critical {
+  color: var(--critical, #C05646);
+}
+
+/* ── Bento Grid ── */
+.dashboard-bento-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 1100px) {
+  .dashboard-bento-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.bento-card {
+  background: var(--surface, #FAF8F5);
+  border: 1px solid var(--blush, #E8E2D9);
+  border-radius: var(--radius-card, 12px);
+  box-shadow: var(--shadow-card, 0 2px 8px rgba(44, 39, 36, 0.04));
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.bento-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.bento-card-category {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-tertiary, #8A8178);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.bento-card-title {
+  font-family: var(--font-heading, 'Fraunces', serif);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--charcoal, #2C2724);
+  margin: 0;
+}
+
+.bento-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--terracotta, #D97757);
+  background: rgba(217, 119, 87, 0.08);
+  border: 1px solid rgba(217, 119, 87, 0.2);
+  padding: 5px 10px;
+  border-radius: var(--radius-full, 9999px);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bento-action-btn:hover {
+  background: var(--terracotta, #D97757);
+  color: #FFFFFF;
+}
+
+.bento-twin-container {
+  height: 260px;
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.bento-machine-meta {
+  border-top: 1px solid var(--blush, #E8E2D9);
+  padding-top: 14px;
+}
+
+.bento-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.bento-meta-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bento-meta-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--charcoal, #2C2724);
+}
+
+.bento-meta-sub {
+  font-size: 0.75rem;
+  color: var(--text-tertiary, #8A8178);
+  margin-top: 2px;
+}
+
+.bento-meta-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--text-tertiary, #8A8178);
+}
+
+/* AI suggestions chips */
+.dashboard-chips-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dashboard-query-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: #FFFFFF;
+  border: 1px solid var(--border-subtle, #E2DBD2);
+  border-radius: var(--radius-md, 8px);
+  color: var(--text-secondary, #5C554E);
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dashboard-query-chip:hover {
+  border-color: var(--terracotta, #D97757);
+  color: var(--terracotta, #D97757);
+  background: #FFFDF9;
+  transform: translateX(3px);
+}
+
+.bento-scenario-pill {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(184, 114, 59, 0.12);
+  color: var(--terracotta, #b8723b);
+  margin-left: 8px;
+}

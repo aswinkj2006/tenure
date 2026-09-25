@@ -1,0 +1,355 @@
+/* ==========================================================================
+   Tenure — Professional Audit Ledger Page Styling
+   High-density, executive industrial aesthetic with tactile feedback
+   ========================================================================== */
+
+.logs-page-pro {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  max-width: 1380px;
+  margin: 0 auto;
+  padding-bottom: 60px;
+}
+
+/* ── Executive Header Banner ── */
+.logs-header-pro {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 24px 28px;
+  border-radius: 18px;
+  background: rgba(255, 251, 245, 0.9);
+  border: 1px solid rgba(226, 205, 178, 0.85);
+  box-shadow: 0 4px 24px rgba(51, 36, 21, 0.05);
+  flex-wrap: wrap;
+}
+
+.logs-header-pro__info {
+  flex: 1;
+  min-width: 320px;
+}
+
+.logs-header-pro__badge-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.logs-header-pro__status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--terracotta);
+  box-shadow: 0 0 8px rgba(184, 114, 59, 0.6);
+}
+
+.logs-header-pro__badge-tag {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--terracotta);
+}
+
+.logs-header-pro__divider {
+  color: var(--blush);
+  font-size: 0.8rem;
+}
+
+.logs-header-pro__ledger-tag {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.logs-header-pro__title {
+  font-family: var(--font-heading);
+  font-size: clamp(1.4rem, 2.2vw, 1.85rem);
+  font-weight: 700;
+  color: var(--charcoal);
+  letter-spacing: -0.02em;
+  margin: 0 0 6px 0;
+}
+
+.logs-header-pro__subtitle {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  max-width: 780px;
+  margin: 0;
+}
+
+.logs-header-pro__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logs-header-pro__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 12px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--charcoal);
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(51, 36, 21, 0.04);
+}
+
+.logs-header-pro__btn:hover {
+  transform: translateY(-1px);
+  border-color: var(--terracotta);
+  box-shadow: 0 4px 14px rgba(184, 114, 59, 0.15);
+}
+
+.logs-header-pro__btn--primary {
+  background: var(--terracotta);
+  color: #FFFBF5 !important;
+  border: 1px solid var(--rust);
+}
+
+.logs-header-pro__btn--primary:hover {
+  background: var(--rust);
+  box-shadow: 0 6px 18px rgba(184, 114, 59, 0.3);
+}
+
+/* ── KPI Metrics Grid ── */
+.logs-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.logs-kpi-card {
+  padding: 18px 20px;
+  border-radius: 14px;
+  background: rgba(255, 251, 245, 0.82);
+  border: 1px solid rgba(226, 205, 178, 0.7);
+  box-shadow: 0 4px 16px rgba(51, 36, 21, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.logs-kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(51, 36, 21, 0.06);
+}
+
+.logs-kpi-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logs-kpi-card__label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.logs-kpi-card__icon-wrap {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(184, 114, 59, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logs-kpi-card__icon-wrap--alert {
+  background: rgba(178, 58, 46, 0.1);
+}
+
+.logs-kpi-card__icon-wrap--success {
+  background: rgba(94, 140, 97, 0.12);
+}
+
+.logs-kpi-card__val {
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: var(--charcoal);
+  letter-spacing: -0.02em;
+  margin-top: 2px;
+}
+
+.logs-kpi-card__sub {
+  font-size: 0.78rem;
+  color: var(--text-tertiary);
+}
+
+/* ── Filters & Search Control Bar ── */
+.logs-controls-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 18px;
+  border-radius: 14px;
+  background: rgba(255, 251, 245, 0.85);
+  border: 1px solid rgba(226, 205, 178, 0.75);
+  flex-wrap: wrap;
+}
+
+.logs-controls-bar__search-form {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 280px;
+}
+
+.logs-controls-bar__search-icon {
+  position: absolute;
+  left: 14px;
+  color: var(--text-secondary);
+  pointer-events: none;
+}
+
+.logs-controls-bar__search-input {
+  width: 100%;
+  padding: 9px 38px 9px 38px;
+  border-radius: 10px;
+  border: 1px solid rgba(226, 205, 178, 0.8);
+  background: rgba(255, 255, 255, 0.75);
+  color: var(--charcoal);
+  font-family: var(--font-body);
+  font-size: 0.84rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.logs-controls-bar__search-input:focus {
+  border-color: var(--terracotta);
+  background: #FFF;
+  box-shadow: 0 0 0 3px rgba(184, 114, 59, 0.15);
+}
+
+.logs-controls-bar__clear-btn {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.logs-controls-bar__clear-btn:hover {
+  color: var(--charcoal);
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.logs-controls-bar__filters {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.logs-chip-group {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.logs-chip-label {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  margin-right: 4px;
+}
+
+.logs-filter-chip {
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(226, 205, 178, 0.6);
+  background: rgba(255, 255, 255, 0.5);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.logs-filter-chip:hover {
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--charcoal);
+  border-color: var(--terracotta);
+}
+
+.logs-filter-chip.active {
+  background: var(--charcoal);
+  color: var(--cream);
+  border-color: var(--charcoal);
+}
+
+.logs-controls-bar__sep {
+  width: 1px;
+  height: 20px;
+  background: var(--blush);
+}
+
+.logs-refresh-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid rgba(226, 205, 178, 0.7);
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.logs-refresh-btn:hover {
+  color: var(--terracotta);
+  border-color: var(--terracotta);
+  background: #FFF;
+}
+
+/* ── Issue Records List ── */
+.logs-list-pro {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.logs-list-pro__count-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  padding: 0 4px;
+}
+
+.logs-list-pro__badge-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--sage);
+}
+
+.logs-live-ping {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--sage);
+  box-shadow: 0 0 6px rgba(94, 140, 97, 0.8);
+}

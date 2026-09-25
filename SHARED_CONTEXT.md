@@ -2,7 +2,7 @@
 
 > **Both frontend and backend developers: read this file before every work session.** Update it after every commit that changes the integration surface (APIs, data shapes, ports, environment, decisions).
 
-Last updated: 2026-09-25T00:50:00+05:30
+Last updated: 2026-09-25T02:02:00+05:30
 
 ---
 
@@ -10,10 +10,10 @@ Last updated: 2026-09-25T00:50:00+05:30
 
 | Area | Status | Owner |
 |------|--------|-------|
-| Backend services | Not started | Backend dev (Aswin) |
-| Frontend UI | Not started | Frontend dev |
-| ProtoTwin sim | Not started | Backend dev (Aswin) |
-| Integration | Not started | Both |
+| Backend services | Phases 1, 2, 3, 5, 6 Complete (All endpoints operational & tested) | Backend dev (Aswin) |
+| Frontend UI | In progress / ready for integration (spec in FRONTEND_SPEC.md) | Frontend dev |
+| ProtoTwin sim | Live ProtoTwin (port 8084) calibrated + sinusoidal fallback | Backend dev (Aswin) |
+| Integration | All REST + WebSocket contracts live on ports 8000, 8001, 8002, 8003 | Both |
 
 ---
 
@@ -23,19 +23,24 @@ Last updated: 2026-09-25T00:50:00+05:30
 
 ### Service Ports (current)
 
-| Service | Port | Status |
-|---------|------|--------|
-| Orchestrator | 8000 | Not running |
-| Anomaly Service | 8001 | Not running |
-| Alert Service | 8002 | Not running |
-| RAG Service | 8003 | Not running |
-| Frontend (Vite) | 5173 | Not running |
+| Service | Port | Status | Available Endpoints |
+|---------|------|--------|---------------------|
+| Orchestrator | 8000 | Ready | `GET /machines`, `GET /machines/{id}`, `GET /dashboard/summary`, `GET /fleet/overview`, `GET /logs`, `GET /logs/{id}`, `GET /logs/export/csv`, `GET /logs/export/pdf/{id}`, `POST /diagnose`, `POST /chat` (supports chart intent), `POST /feedback`, `GET /health` |
+| Anomaly Service | 8001 | Ready | `ws://localhost:8001/ws/sensors/{machine_id}`, `GET /sensors/{machine_id}/latest`, `GET /sensors/{machine_id}/history`, `GET /anomalies/{machine_id}`, `POST /inject-anomaly`, `POST /clear-anomaly` |
+| Alert Service | 8002 | Ready | `ws://localhost:8002/ws/alerts/{machine_id}`, `GET /alerts/{machine_id}`, `POST /alerts`, `POST /alerts/{id}/acknowledge`, `POST /alerts/{id}/resolve` |
+| RAG Service | 8003 | Ready | `POST /ingest` (multipart upload), `POST /retrieve`, `GET /documents/{machine_id}`, `GET /health` |
+| Frontend (Vite) | 5173 | Not running | — |
+
 
 ### API Changes Log
 
 | Date | Change | Affected Endpoints | Who Changed | Frontend Impact |
 |------|--------|--------------------|-------------|-----------------|
-| — | (none yet) | — | — | — |
+| 2026-09-25 | Added anomaly query endpoint | `GET /anomalies/{machine_id}` (port 8001) | Aswin | Frontend can fetch past anomalies on load |
+| 2026-09-25 | Added demo injection triggers | `POST /inject-anomaly`, `POST /clear-anomaly` (port 8001) | Aswin | Frontend dev can trigger anomalies directly from UI buttons for testing |
+| 2026-09-25 | Added Audit Logs, CSV/PDF Exports, Fleet Overview | `GET /logs`, `GET /logs/{id}`, `GET /logs/export/csv`, `GET /logs/export/pdf/{id}`, `GET /dashboard/summary`, `GET /machines` | Aswin | Full backend support for Logs page and Fleet Dashboard |
+| 2026-09-25 | Added Chatbot Chart Intent detection | `POST /chat` (port 8000) | Aswin | Chat responses now include structured `chart_data` when users ask for sensor trends/plots |
+
 
 ---
 
@@ -43,7 +48,7 @@ Last updated: 2026-09-25T00:50:00+05:30
 
 | # | Decision | Reason | Date | Who |
 |---|----------|--------|------|-----|
-| 1 | LLM: Gemini 2.5 Flash (primary), Gemini 2.5 Flash as backup | Cost-effective, fast, good quality | 2026-09-25 | Aswin |
+| 1 | LLM: Gemini 3.6 Flash (primary), Gemini 3.7 Flash as backup | Cost-effective, fast, good quality | 2026-09-25 | Aswin |
 | 2 | Frontend and backend in separate branches, merge via PR | Clean separation, parallel development | 2026-09-25 | Aswin |
 | 3 | UR5e docs added manually by user during demo (not pre-bundled) | Demonstrates real-time onboarding flow | 2026-09-25 | Aswin |
 
@@ -74,8 +79,8 @@ See FRONTEND_SPEC.md for full library recommendations
 ```env
 # Backend
 GEMINI_API_KEY=<your-key>
-LLM_MODEL=gemini-2.5-flash
-LLM_BACKUP_MODEL=gemini-2.5-flash
+LLM_MODEL=gemini-3.6-flash
+LLM_BACKUP_MODEL=gemini-3.7-flash
 VECTOR_DB=qdrant  # or chroma
 DATABASE_URL=sqlite:///./tenure.db
 

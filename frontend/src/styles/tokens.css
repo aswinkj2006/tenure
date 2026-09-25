@@ -1,0 +1,93 @@
+/* ============================================
+   Tenure — Design Tokens
+   Warm industrial-editorial palette
+   ============================================ */
+
+:root {
+  /* ── Canvas & Surface ── */
+  --bg: #F6EEE0;
+  --surface: #FFFBF5;
+  --blush: #E2CDB2;
+  --blush-light: #EDE3D4;
+
+  /* ── Text ── */
+  --charcoal: #332415;
+  --text-secondary: #7A6552;
+  --text-tertiary: #A8967F;
+
+  /* ── Brand ── */
+  --terracotta: #B8723B;
+  --terracotta-hover: #C47F4A;
+  --rust: #894A1D;
+
+  /* ── Status (semantic only) ── */
+  --ok: #5E8C61;
+  --ok-bg: #EAF2E7;
+  --ok-border: #B5D4B7;
+
+  --warn: #D9A441;
+  --warn-bg: #FBF1DA;
+  --warn-border: #F0D99A;
+
+  --high: #D0682E;
+  --high-bg: #FBE8DA;
+  --high-border: #F0C4A0;
+
+  --critical: #B23A2E;
+  --critical-bg: #F8E3E0;
+  --critical-border: #E8B4AF;
+
+  /* ── Typography ── */
+  --font-heading: 'Fraunces', 'Georgia', serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  --text-xs: 0.75rem;    /* 12px */
+  --text-sm: 0.8125rem;  /* 13px */
+  --text-base: 0.9375rem;/* 15px */
+  --text-md: 1rem;       /* 16px */
+  --text-lg: 1.125rem;   /* 18px */
+  --text-xl: 1.375rem;   /* 22px */
+  --text-2xl: 1.75rem;   /* 28px */
+  --text-3xl: 2.25rem;   /* 36px */
+  --text-4xl: 3rem;       /* 48px */
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* ── Spacing ── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* ── Radius ── */
+  --radius-card: 20px;
+  --radius-inner: 12px;
+  --radius-pill: 999px;
+  --radius-sm: 6px;
+
+  /* ── Shadows (warm, never grey-blue) ── */
+  --shadow-card: 0 2px 8px rgba(51, 36, 21, 0.06);
+  --shadow-elevated: 0 4px 16px rgba(51, 36, 21, 0.10);
+  --shadow-hover: 0 6px 20px rgba(51, 36, 21, 0.12);
+
+  /* ── Transitions ── */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 200ms;
+  --duration-slow: 400ms;
+
+  /* ── Sidebar ── */
+  --sidebar-width: 240px;
+  --sidebar-collapsed: 72px;
+  --topbar-height: 64px;
+}

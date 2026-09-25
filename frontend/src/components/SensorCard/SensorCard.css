@@ -1,0 +1,223 @@
+/* ============================================
+   Tenure — Sensor Card Component
+   Frosted glass joint card with radial load ring
+   ============================================ */
+
+.sensor-card {
+  padding: 18px 20px;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.sensor-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(51, 36, 21, 0.12);
+}
+
+/* Status border accent */
+.sensor-card--ok { border-left: 3.5px solid var(--ok, #5E8C61); }
+.sensor-card--warn { border-left: 3.5px solid var(--warn, #D9A441); }
+.sensor-card--critical { border-left: 3.5px solid var(--critical, #B23A2E); }
+
+.sensor-card--highlighted {
+  border-color: var(--terracotta, #B8723B) !important;
+  box-shadow: 0 0 0 2px rgba(184, 114, 59, 0.3), 0 12px 28px rgba(51, 36, 21, 0.12) !important;
+  transform: translateY(-3px);
+}
+
+/* Anomaly micro shake */
+.sensor-card--anomaly-shake {
+  animation: cardShake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes cardShake {
+  10%, 90% { transform: translate3d(-1px, -2px, 0); }
+  20%, 80% { transform: translate3d(2px, -2px, 0); }
+  30%, 50%, 70% { transform: translate3d(-2px, -2px, 0); }
+  40%, 60% { transform: translate3d(2px, -2px, 0); }
+}
+
+/* ── Header ── */
+.sensor-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.sensor-card__name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--charcoal, #332415);
+  white-space: nowrap;
+}
+
+.sensor-card__label {
+  font-size: 0.72rem;
+  color: var(--text-tertiary, #A8967F);
+  white-space: nowrap;
+}
+
+.sensor-card__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-secondary, #7A6552);
+  white-space: nowrap;
+  flex-shrink: 0;
+  padding: 3px 8px;
+  background: rgba(94, 140, 97, 0.1);
+  border-radius: 999px;
+  border: 1px solid rgba(94, 140, 97, 0.25);
+}
+
+
+/* ── Radial load ring ── */
+.sensor-load-ring {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.load-ring-percent {
+  position: absolute;
+  font-size: 8px;
+  font-weight: 700;
+  color: var(--text-secondary, #7A6552);
+}
+
+/* ── Value ── */
+.sensor-card__value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.sensor-card__value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--charcoal, #332415);
+  line-height: 1;
+}
+
+.sensor-card__value--critical {
+  color: var(--critical, #B23A2E);
+}
+
+.sensor-card__value--warn {
+  color: var(--warn, #D9A441);
+}
+
+.sensor-card__unit {
+  font-size: 0.8rem;
+  color: var(--text-tertiary, #A8967F);
+}
+
+.sensor-card__status-inline {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  color: var(--text-secondary, #7A6552);
+}
+
+/* ── Sparkline area ── */
+.sensor-card__sparkline {
+  margin: 12px -20px -12px;
+  height: 48px;
+}
+
+/* ── Expand details ── */
+.sensor-card__details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(226, 205, 178, 0.5);
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sensor-card:hover .sensor-card__details,
+.sensor-card--expanded .sensor-card__details {
+  max-height: 100px;
+  opacity: 1;
+}
+
+.sensor-card__detail {
+  display: flex;
+  flex-direction: column;
+}
+
+.sensor-card__detail-label {
+  font-size: 0.7rem;
+  color: var(--text-tertiary, #A8967F);
+}
+
+.sensor-card__detail-value {
+  font-size: 0.78rem;
+  color: var(--text-secondary, #7A6552);
+}
+
+/* ── TCP Card variant ── */
+.sensor-card--tcp {
+  grid-column: span 2;
+  min-width: 280px;
+}
+
+@media (max-width: 700px) {
+  .sensor-card--tcp {
+    grid-column: span 1;
+    min-width: 0;
+  }
+}
+
+.sensor-card--tcp .sensor-card__tcp-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.sensor-card__tcp-axis {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 4px;
+  background: rgba(51, 36, 21, 0.035);
+  border: 1px solid rgba(226, 205, 178, 0.55);
+  border-radius: 8px;
+  min-width: 0;
+}
+
+.sensor-card__tcp-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--terracotta, #B8723B);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+}
+
+.sensor-card__tcp-value {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--charcoal, #332415);
+  white-space: nowrap;
+  letter-spacing: -0.02em;
+}
+

@@ -1,0 +1,52 @@
+/* ============================================
+   Tenure — Error State Component
+   ============================================ */
+
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-12) var(--space-8);
+  text-align: center;
+  gap: var(--space-4);
+}
+
+.error-state__icon {
+  width: 48px;
+  height: 48px;
+  color: var(--critical);
+  opacity: 0.6;
+}
+
+.error-state__title {
+  font-family: var(--font-heading);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  color: var(--charcoal);
+}
+
+.error-state__message {
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+  max-width: 360px;
+  line-height: 1.6;
+}
+
+.error-state__retry {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-5);
+  background: var(--terracotta);
+  color: white;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  border-radius: var(--radius-pill);
+  transition: background var(--duration-fast) var(--ease-out);
+  margin-top: var(--space-2);
+}
+
+.error-state__retry:hover {
+  background: var(--rust);
+}

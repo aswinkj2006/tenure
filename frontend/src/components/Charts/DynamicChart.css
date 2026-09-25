@@ -1,0 +1,91 @@
+/* ============================================
+   Tenure — Dynamic Chart Component
+   Frosted glass chart with custom animated tooltip
+   ============================================ */
+
+.dynamic-chart {
+  padding: 18px 22px;
+}
+
+.dynamic-chart__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.dynamic-chart__title {
+  font-family: var(--font-heading, 'Fraunces', serif);
+  font-size: 0.96rem;
+  font-weight: 600;
+  color: var(--charcoal, #332415);
+}
+
+.dynamic-chart__pin {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full, 9999px);
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text-secondary, #7A6552);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dynamic-chart__pin:hover {
+  border-color: var(--terracotta, #B8723B);
+  color: var(--charcoal, #332415);
+}
+
+.dynamic-chart__pin--pinned {
+  background: var(--terracotta, #B8723B);
+  border-color: var(--terracotta, #B8723B);
+  color: white;
+}
+
+.dynamic-chart__pin--pinned:hover {
+  background: var(--rust, #894A1D);
+}
+
+.dynamic-chart__body {
+  height: 210px;
+}
+
+/* Custom Tooltip */
+.dynamic-chart-tooltip {
+  padding: 8px 12px;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(51, 36, 21, 0.12);
+  font-size: 0.78rem;
+  border: 1px solid rgba(226, 205, 178, 0.8);
+}
+
+.chart-tooltip-time {
+  font-size: 0.7rem;
+  color: var(--text-tertiary, #A8967F);
+  margin-bottom: 4px;
+}
+
+.chart-tooltip-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--charcoal, #332415);
+}
+
+.tooltip-legend-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.tooltip-entry-name {
+  font-weight: 500;
+}
+
+.tooltip-entry-val {
+  font-weight: 700;
+  color: var(--terracotta, #B8723B);
+}

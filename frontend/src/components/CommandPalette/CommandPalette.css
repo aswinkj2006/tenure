@@ -1,0 +1,110 @@
+/* ============================================
+   Tenure — Command Palette (cmdk) Styling
+   Frosted glass modal with warm typography
+   ============================================ */
+
+[cmdk-overlay] {
+  position: fixed;
+  inset: 0;
+  background: rgba(44, 39, 36, 0.35);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 999;
+  animation: fadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.command-dialog {
+  position: fixed;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 580px;
+  border-radius: var(--radius-card, 20px);
+  overflow: hidden;
+  z-index: 1000;
+  animation: dialogScale 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes dialogScale {
+  from { opacity: 0; transform: translate(-50%, -10px) scale(0.97); }
+  to { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
+
+.command-search-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(226, 205, 178, 0.5);
+}
+
+.command-search-icon {
+  color: var(--text-tertiary, #A8967F);
+}
+
+.command-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 0.95rem;
+  color: var(--charcoal, #332415);
+  font-family: var(--font-body, 'Inter', sans-serif);
+  outline: none;
+}
+
+.command-input::placeholder {
+  color: var(--text-tertiary, #A8967F);
+}
+
+.command-esc-badge {
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 4px;
+  color: var(--text-tertiary, #A8967F);
+}
+
+.command-list {
+  max-height: 340px;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+[cmdk-group-heading] {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-tertiary, #A8967F);
+  padding: 8px 12px 4px;
+}
+
+.command-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  color: var(--charcoal, #332415);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.command-item[data-selected='true'] {
+  background: rgba(184, 114, 59, 0.12);
+  color: var(--terracotta, #B8723B);
+}
+
+.command-item-danger[data-selected='true'] {
+  background: rgba(178, 58, 46, 0.12);
+  color: var(--critical, #B23A2E);
+}
+
+.command-empty {
+  padding: 30px;
+  text-align: center;
+  color: var(--text-tertiary, #A8967F);
+  font-size: 0.85rem;
+}
