@@ -12,6 +12,7 @@ Update the address constants below to match your actual ProtoTwin model.
 """
 
 import asyncio
+from pathlib import Path
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -282,7 +283,8 @@ class ProtoTwinClient:
 class MockProtoTwinClient(ProtoTwinClient):
     """
     Mock client for development without ProtoTwin installed.
-    Generates realistic-looking sensor data with small random noise.
+    Generates realistic industrial pick-and-place trajectory with smooth kinematics,
+    dynamic torque profiles, gradual breakdown degradation ramping, and emergency stop.
     """
 
     def __init__(self, machine_id: str = "ur5e-001", step_interval: float = 0.1):
@@ -293,80 +295,210 @@ class MockProtoTwinClient(ProtoTwinClient):
         self._anomaly_type: str | None = None
         self._anomaly_magnitude: float = 0.0
 
+        # Gradual degradation simulation state
+        self._gradual_active = False
+        self._gradual_joint = 3
+        self._gradual_ramp_val = 0.0
+        self._gradual_rate = 2.8  # Nm per second
+        self._emergency_stop = False
+        self._frozen_sensors: dict[str, float] = {}
+
     async def connect(self):
         self._running = True
-        print("[mock] Mock ProtoTwin client started — generating synthetic sensor data.")
+        print("[mock] Mock ProtoTwin client started — generating industrial pick-and-place telemetry.")
 
     async def disconnect(self):
         self._running = False
         print("[mock] Mock ProtoTwin client stopped.")
 
+    def start_gradual_degradation(self, joint: int = 3, rate_per_sec: float = 3.2):
+        """Begin slowly ramping up torque to simulate gradual mechanical degradation."""
+        self._gradual_active = True
+        self._gradual_joint = joint
+        self._gradual_ramp_val = 0.0
+        self._gradual_rate = rate_per_sec
+        self._emergency_stop = False
+        print(f"[mock] Gradual mechanical breakdown simulation initiated on Joint {joint} (ramp rate: +{rate_per_sec} Nm/s).")
+
+    def trigger_emergency_stop(self):
+        """Engage immediate safety stop, freezing kinematic motion at current pose."""
+        self._emergency_stop = True
+        print("[mock] EMERGENCY STOP ENGAGED: Arm kinematics frozen at current pose.")
+
+    def reset_emergency_stop(self):
+        """Release emergency stop and return to nominal operating state."""
+        self._emergency_stop = False
+        self._gradual_active = False
+        self._gradual_ramp_val = 0.0
+        self._anomaly_active = False
+        self._frozen_sensors = {}
+        print("[mock] Emergency stop cleared. Nominal pick-and-place operation resumed.")
+
     def inject_anomaly(
         self, joint: int, anomaly_type: str = "torque", magnitude: float = 185.0
     ):
-        """
-        Inject a simulated anomaly into the mock data stream.
-
-        Args:
-            joint: Joint number (1-6)
-            anomaly_type: 'torque', 'velocity', or 'position'
-            magnitude: The anomalous value to inject
-        """
+        """Inject a simulated instant anomaly into the mock data stream."""
         self._anomaly_active = True
         self._anomaly_joint = joint
         self._anomaly_type = anomaly_type
         self._anomaly_magnitude = magnitude
-        print(
-            f"[mock] Anomaly injected: joint_{joint}_{anomaly_type} = {magnitude}"
-        )
+        print(f"[mock] Anomaly injected: joint_{joint}_{anomaly_type} = {magnitude}")
 
     def clear_anomaly(self):
-        """Clear the injected anomaly."""
+        """Clear all active anomalies and reset degradation."""
         self._anomaly_active = False
         self._anomaly_joint = None
         self._anomaly_type = None
-        print("[mock] Anomaly cleared.")
+        self._gradual_active = False
+        self._gradual_ramp_val = 0.0
+        self._emergency_stop = False
+        self._frozen_sensors = {}
+        print("[mock] All anomalies cleared.")
 
     def read_all_sensors(self) -> dict[str, float]:
         import math
         import random
 
-        t = self._step_count * self.step_interval
+        # If E-Stop is active, freeze all joint positions and hold the fault state
+        if self._emergency_stop and self._frozen_sensors:
+            frozen = dict(self._frozen_sensors)
+            # Add minor sensor noise to torques while held under static load
+            for k in list(frozen.keys()):
+                if "velocity" in k:
+                    frozen[k] = 0.0
+                elif "torque" in k:
+                    frozen[k] = round(frozen[k] + random.gauss(0, 0.15), 2)
+            frozen["emergency_stop"] = 1.0
+            return frozen
 
+        # ── Realistic Industrial Pick-and-Place Cycle (10-second period) ──
+        # Cycle Breakdown:
+        # 0.0 - 1.5s: Standby hover at Pick Station (Feeder)
+        # 1.5 - 3.0s: Descend, close gripper around machined part
+        # 3.0 - 4.5s: Lift part vertically
+        # 4.5 - 6.5s: Swing Base Joint 1 to Place Station (Conveyor)
+        # 6.5 - 8.0s: Descend, open gripper to deposit part
+        # 8.0 - 10.0s: Retract up and swing back to Pick Station
+        cycle_period = 10.0
+        t = (self._step_count * self.step_interval) % cycle_period
+
+        # Interpolate waypoints
+        if t < 1.5:
+            # Standby hover at pick station
+            j1 = -0.52
+            j2 = -0.85
+            j3 = 1.35
+            j4 = -0.50
+            j5 = 0.0
+            j6 = 0.0
+            gripper = 0.0
+            phase_speed = 0.0
+        elif t < 3.0:
+            # Descend to pick
+            p = (t - 1.5) / 1.5
+            s = math.sin(p * math.pi * 0.5)
+            j1 = -0.52
+            j2 = -0.85 - 0.30 * s
+            j3 = 1.35 + 0.38 * s
+            j4 = -0.50 - 0.08 * s
+            j5 = 0.0
+            j6 = 0.0
+            gripper = 1.0 if p > 0.6 else 0.0
+            phase_speed = 0.25 * math.cos(p * math.pi * 0.5)
+        elif t < 4.5:
+            # Lift part up
+            p = (t - 3.0) / 1.5
+            s = math.sin(p * math.pi * 0.5)
+            j1 = -0.52
+            j2 = -1.15 + 0.30 * s
+            j3 = 1.73 - 0.38 * s
+            j4 = -0.58 + 0.08 * s
+            j5 = 0.0
+            j6 = 0.0
+            gripper = 1.0
+            phase_speed = 0.25 * math.cos(p * math.pi * 0.5)
+        elif t < 6.5:
+            # Swing to place station
+            p = (t - 4.5) / 2.0
+            s = 0.5 * (1.0 - math.cos(p * math.pi))  # smooth S-curve
+            j1 = -0.52 + 1.25 * s
+            j2 = -0.85 + 0.05 * math.sin(p * math.pi)
+            j3 = 1.35 + 0.05 * math.sin(p * math.pi)
+            j4 = -0.50
+            j5 = 0.1 * math.sin(p * math.pi)
+            j6 = 0.2 * s
+            gripper = 1.0
+            phase_speed = 0.62 * math.sin(p * math.pi)
+        elif t < 8.0:
+            # Descend to place on conveyor
+            p = (t - 6.5) / 1.5
+            s = math.sin(p * math.pi * 0.5)
+            j1 = 0.73
+            j2 = -0.85 - 0.26 * s
+            j3 = 1.35 + 0.32 * s
+            j4 = -0.50 - 0.06 * s
+            j5 = 0.0
+            j6 = 0.2
+            gripper = 0.0 if p > 0.5 else 1.0
+            phase_speed = 0.22 * math.cos(p * math.pi * 0.5)
+        else:
+            # Retract and swing back to pick
+            p = (t - 8.0) / 2.0
+            s = 0.5 * (1.0 - math.cos(p * math.pi))
+            j1 = 0.73 - 1.25 * s
+            j2 = -1.11 + 0.26 * s
+            j3 = 1.67 - 0.32 * s
+            j4 = -0.56 + 0.06 * s
+            j5 = 0.0
+            j6 = 0.2 * (1.0 - s)
+            gripper = 0.0
+            phase_speed = 0.62 * math.sin(p * math.pi)
+
+        # Noise and sensor readings dict
         sensors = {}
+        target_positions = [j1, j2, j3, j4, j5, j6]
+        nominal_torques = [32.0, 58.0, 48.0, 11.5, 7.8, 3.2]
 
-        # Generate realistic UR5e joint data with sinusoidal motion
         for i in range(1, 7):
-            # Positions: slow sinusoidal sweep with phase offsets
-            phase = (i - 1) * 0.5
-            base_pos = 0.5 * math.sin(0.3 * t + phase)
-            sensors[f"joint_{i}_position"] = round(
-                base_pos + random.gauss(0, 0.002), 4
-            )
+            pos = target_positions[i - 1]
+            sensors[f"joint_{i}_position"] = round(pos + random.gauss(0, 0.001), 4)
+            vel = phase_speed if i in (1, 2, 3) else 0.05 * math.sin(t * 2)
+            sensors[f"joint_{i}_velocity"] = round(vel + random.gauss(0, 0.005), 4)
 
-            # Velocities: derivative of position + noise
-            base_vel = 0.5 * 0.3 * math.cos(0.3 * t + phase)
-            sensors[f"joint_{i}_velocity"] = round(
-                base_vel + random.gauss(0, 0.01), 4
-            )
+            # Torques: nominal dynamic profile
+            base_t = nominal_torques[i - 1] + 6.0 * math.sin(t * 0.8 + i)
+            if gripper > 0.5 and i in (2, 3):
+                base_t += 5.5  # workpiece payload torque
+            sensors[f"joint_{i}_torque"] = round(base_t + random.gauss(0, 0.4), 2)
 
-            # Torques: proportional to position + gravity-like offset + noise
-            gravity_offset = [45.0, 62.0, 52.0, 12.0, 9.0, 3.0][i - 1]
-            base_torque = gravity_offset + 5.0 * math.sin(0.3 * t + phase)
-            sensors[f"joint_{i}_torque"] = round(
-                base_torque + random.gauss(0, 0.5), 2
-            )
+        # Gripper & tool center point
+        sensors["gripper_position"] = gripper
+        sensors["emergency_stop"] = 0.0
+        sensors["tcp_x"] = round(0.45 * math.cos(j1) + random.gauss(0, 0.001), 4)
+        sensors["tcp_y"] = round(0.45 * math.sin(j1) + random.gauss(0, 0.001), 4)
+        sensors["tcp_z"] = round(0.25 - 0.15 * math.sin(j2) + random.gauss(0, 0.001), 4)
 
-        # TCP position
-        sensors["tcp_x"] = round(0.4 + 0.1 * math.sin(0.2 * t), 4)
-        sensors["tcp_y"] = round(-0.1 + 0.05 * math.cos(0.2 * t), 4)
-        sensors["tcp_z"] = round(0.3 + 0.08 * math.sin(0.15 * t), 4)
+        # ── Handle Gradual Mechanical Degradation (Harmonic Reducer Drift) ──
+        if self._gradual_active:
+            self._gradual_ramp_val += self._gradual_rate * self.step_interval
+            target_key = f"joint_{self._gradual_joint}_torque"
+            sensors[target_key] = round(sensors[target_key] + self._gradual_ramp_val, 2)
+            # Add thermal drift and micro-vibration signatures
+            sensors["motor_temperature"] = round(42.0 + (self._gradual_ramp_val * 0.22), 1)
 
-        # Inject anomaly if active
+            # Automatic safety cutoff if it reaches critical threshold (>148 Nm)
+            if sensors[target_key] >= 148.0 and not self._emergency_stop:
+                print(f"[mock] CRITICAL THRESHOLD EXCEEDED ({sensors[target_key]} Nm)! Engaging E-Stop.")
+                self.trigger_emergency_stop()
+
+        # Handle instant injected anomaly
         if self._anomaly_active and self._anomaly_joint is not None:
             key = f"joint_{self._anomaly_joint}_{self._anomaly_type}"
             if key in sensors:
                 sensors[key] = self._anomaly_magnitude
+
+        if self._emergency_stop:
+            self._frozen_sensors = dict(sensors)
 
         self._step_count += 1
         return sensors

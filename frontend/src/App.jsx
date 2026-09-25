@@ -12,6 +12,8 @@ import MachinePage from './pages/MachinePage';
 import LogsPage from './pages/LogsPage';
 import OnboardPage from './pages/OnboardPage';
 import LoginPage from './pages/LoginPage';
+import TechnicianPortal from './pages/TechnicianPortal';
+import OperationsPage from './pages/OperationsPage';
 import useSensorStore from './stores/sensorStore';
 import { pageTransitionVariants } from './utils/motion';
 import './App.css';
@@ -33,8 +35,11 @@ function AnimatedRoutes() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/machine/:id" element={<MachinePage />} />
           <Route path="/logs" element={<LogsPage />} />
+          <Route path="/operations" element={<OperationsPage />} />
           <Route path="/onboard" element={<OnboardPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/technician/:anomalyId" element={<TechnicianPortal />} />
+          <Route path="/technician" element={<TechnicianPortal />} />
         </Routes>
       </motion.div>
     </AnimatePresence>
@@ -44,6 +49,8 @@ function AnimatedRoutes() {
 function AppLayout() {
   const location = useLocation();
   const isLogin = location.pathname === '/login';
+  const isTechnician = location.pathname.startsWith('/technician');
+  const isFullscreen = isLogin || isTechnician;
 
   return (
     <div className={`app ${isLogin ? 'app--login' : ''}`}>
@@ -67,11 +74,11 @@ function AppLayout() {
       />
 
       {/* Shell Navigation */}
-      {!isLogin && <Sidebar />}
-      {!isLogin && <TopBar />}
+      {!isFullscreen && <Sidebar />}
+      {!isFullscreen && <TopBar />}
 
       {/* Main Content Area */}
-      <main className={isLogin ? 'app__content--fullscreen' : 'app__content'}>
+      <main className={isFullscreen ? 'app__content--fullscreen' : 'app__content'}>
         <AnimatedRoutes />
       </main>
     </div>

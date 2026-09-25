@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Cpu, FileText, Command, PlusCircle, LogOut } from 'lucide-react';
+import { LayoutDashboard, Cpu, FileText, Command, PlusCircle, LogOut, Wrench } from 'lucide-react';
 import { motion } from 'framer-motion';
 import StatusDot from '../common/StatusDot';
 import useSensorStore from '../../stores/sensorStore';
@@ -30,8 +30,9 @@ function LogoMark() {
 const navItems = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/machine/ur5e-001', label: 'Machine Twin', icon: Cpu },
-  { to: '/onboard', label: 'Onboard Asset', icon: PlusCircle },
+  { to: '/operations', label: 'Operations Hub', icon: Wrench },
   { to: '/logs', label: 'Audit Logs', icon: FileText },
+  { to: '/onboard', label: 'Onboard Asset', icon: PlusCircle },
 ];
 
 export default function Sidebar() {

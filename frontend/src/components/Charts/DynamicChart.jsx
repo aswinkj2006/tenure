@@ -120,17 +120,20 @@ export default function DynamicChart({ chartData, onTogglePin }) {
               <XAxis dataKey="x" tickFormatter={formatAxisTick} tick={{ fontSize: 11, fill: '#A8967F' }} axisLine={{ stroke: 'rgba(226, 205, 178, 0.5)' }} tickLine={false} />
               <YAxis tick={{ fontSize: 11, fill: '#A8967F' }} axisLine={false} tickLine={false} />
               <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(184, 114, 59, 0.25)', strokeWidth: 1.5, strokeDasharray: '4 4' }} />
-              {series.map((s, i) => (
-                <Line
-                  key={i}
-                  type="monotone"
-                  dataKey={s.name}
-                  stroke={chartColor}
-                  strokeWidth={2.5}
-                  dot={false}
-                  activeDot={{ r: 5, fill: chartColor, stroke: '#FFFFFF', strokeWidth: 2 }}
-                />
-              ))}
+              {series.map((s, i) => {
+                const sColor = s.color || (i === 1 ? '#4A6B82' : chartColor);
+                return (
+                  <Line
+                    key={i}
+                    type="monotone"
+                    dataKey={s.name}
+                    stroke={sColor}
+                    strokeWidth={2.5}
+                    dot={false}
+                    activeDot={{ r: 5, fill: sColor, stroke: '#FFFFFF', strokeWidth: 2 }}
+                  />
+                );
+              })}
             </LineChart>
           )}
         </ResponsiveContainer>

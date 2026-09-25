@@ -17,6 +17,11 @@ export default function URModel({ onJointClick }) {
   const j6Ref = useRef();
   const tcpRef = useRef();
 
+  // Part pick-and-place animation refs
+  const partInGripperRef = useRef();
+  const partAtPickRef = useRef();
+  const partAtPlaceRef = useRef();
+
   // Energy pulse mesh refs
   const energyUpperRef = useRef();
   const energyForearmRef = useRef();
@@ -38,6 +43,16 @@ export default function URModel({ onJointClick }) {
         color: '#DDD7D0',
         roughness: 0.38,
         metalness: 0.35,
+      }),
+    []
+  );
+
+  const matWorkpiece = useMemo(
+    () =>
+      new THREE.MeshStandardMaterial({
+        color: '#D4AF37', // Polished brass workpiece part
+        metalness: 0.85,
+        roughness: 0.22,
       }),
     []
   );
@@ -122,6 +137,20 @@ export default function URModel({ onJointClick }) {
         matEnergy.emissiveIntensity = pulseIntensity;
       }
     }
+
+    // Pick-and-Place workpiece transfer animation state
+    // Trajectory period is 8.0s:
+    // 0.0 - 2.2s: Arm swoops to pick station (part is waiting on pick feeder)
+    // 2.2 - 5.8s: Gripper grasps part, lifts and slews to place conveyor fixture
+    // 5.8 - 8.0s: Gripper deposits part on place fixture and returns home
+    const tCycle = time % 8.0;
+    const isCarrying = tCycle >= 2.2 && tCycle < 5.8;
+    const isAtPlace = tCycle >= 5.8;
+    const isAtPick = tCycle < 2.2;
+
+    if (partInGripperRef.current) partInGripperRef.current.visible = isCarrying;
+    if (partAtPickRef.current) partAtPickRef.current.visible = isAtPick;
+    if (partAtPlaceRef.current) partAtPlaceRef.current.visible = isAtPlace;
   });
 
   const handlePointerOver = (idx, e) => {
@@ -363,6 +392,11 @@ export default function URModel({ onJointClick }) {
                     <mesh position={[0.016, 0.02, 0]} material={matMetal}>
                       <boxGeometry args={[0.006, 0.028, 0.014]} />
                     </mesh>
+
+                    {/* Part in Gripper (Held while carrying) */}
+                    <mesh ref={partInGripperRef} position={[0, 0.022, 0]} material={matWorkpiece} castShadow>
+                      <cylinderGeometry args={[0.012, 0.012, 0.026, 16]} />
+                    </mesh>
                   </group>
 
                   {/* TCP Anchor Point */}
@@ -390,6 +424,34 @@ export default function URModel({ onJointClick }) {
             </group>
           </group>
         </group>
+      </group>
+
+      {/* ── Industrial Pick Feeder Station ── */}
+      <group position={[0.28, 0, 0.32]}>
+        <mesh position={[0, 0.02, 0]} material={matDarkAccent} castShadow receiveShadow>
+          <cylinderGeometry args={[0.045, 0.052, 0.04, 24]} />
+        </mesh>
+        <mesh position={[0, 0.042, 0]} material={matChamfer}>
+          <cylinderGeometry args={[0.04, 0.04, 0.005, 24]} />
+        </mesh>
+        {/* Workpiece resting at Pick Station */}
+        <mesh ref={partAtPickRef} position={[0, 0.058, 0]} material={matWorkpiece} castShadow>
+          <cylinderGeometry args={[0.012, 0.012, 0.026, 16]} />
+        </mesh>
+      </group>
+
+      {/* ── Industrial Place Conveyor Station ── */}
+      <group position={[-0.34, 0, 0.30]}>
+        <mesh position={[0, 0.02, 0]} material={matDarkAccent} castShadow receiveShadow>
+          <boxGeometry args={[0.09, 0.04, 0.09]} />
+        </mesh>
+        <mesh position={[0, 0.042, 0]} material={matChamfer}>
+          <boxGeometry args={[0.08, 0.005, 0.08]} />
+        </mesh>
+        {/* Deposited Workpiece at Place Station */}
+        <mesh ref={partAtPlaceRef} position={[0, 0.058, 0]} material={matWorkpiece} castShadow>
+          <cylinderGeometry args={[0.012, 0.012, 0.026, 16]} />
+        </mesh>
       </group>
 
       {/* Dynamic TCP Motion Trail */}

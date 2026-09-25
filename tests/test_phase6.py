@@ -25,14 +25,17 @@ def setup_test_data():
     init_db()
     with get_connection() as conn:
         cursor = conn.cursor()
+        from datetime import datetime, timezone
+        now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
         # Seed test anomaly
         cursor.execute(
             """
             INSERT OR REPLACE INTO anomaly_records
             (id, machine_id, ts, flagged_sensors, deviation_magnitude, severity, status, created_at)
             VALUES ('anom-audit-test-1', 'ur5e-001', '2026-09-25T01:15:00Z',
-                    '["joint_3_torque"]', '{"joint_3_torque": 182.5}', 'critical', 'resolved', '2026-09-25 01:15:00')
-            """
+                    '["joint_3_torque"]', '{"joint_3_torque": 182.5}', 'critical', 'resolved', ?)
+            """,
+            (now_str,),
         )
         # Seed test diagnosis
         cursor.execute(

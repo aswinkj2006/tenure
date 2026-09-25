@@ -1,4 +1,4 @@
-import { Bell, Wifi, WifiOff, Sparkles, SlidersHorizontal } from 'lucide-react';
+import { Bell, Wifi, WifiOff, Sparkles, SlidersHorizontal, Presentation } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import useSensorStore from '../../stores/sensorStore';
@@ -63,7 +63,21 @@ export default function TopBar() {
       </div>
 
       <div className="topbar__actions">
+        {/* Pitch Deck presentation link */}
+        <a
+          href="/deck.html"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="topbar__pill-btn glass-subtle"
+          style={{ textDecoration: 'none', color: 'var(--terracotta)', fontWeight: 600 }}
+          title="Open Tenure Interactive Pitch Deck"
+        >
+          <Presentation size={13} />
+          <span>Pitch Deck</span>
+        </a>
+
         {/* Reduce effects toggle */}
+
         <button
           type="button"
           className={`topbar__pill-btn glass-subtle ${reduceEffects ? 'active' : ''}`}

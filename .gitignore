@@ -66,3 +66,13 @@ logs/
 # Coverage
 htmlcov/
 .coverage
+
+# Internal Scratch and Notes
+DEMO_SCRIPT.md
+PROGRESS.md
+SUBMISSION.md
+scripts/_patch_utf8.py
+scripts/restart_services.py
+scripts/seed_demo_fleet.py
+scripts/seed_recurrence_demo.py
+

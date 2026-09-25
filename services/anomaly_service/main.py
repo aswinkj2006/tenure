@@ -473,46 +473,102 @@ class InjectAnomalyRequest(BaseModel):
     anomaly_type: str = "torque"
 
 
-@app.post("/inject-anomaly")
-async def inject_anomaly(req: InjectAnomalyRequest):
+class GradualDegradationRequest(BaseModel):
+    joint: int = 3
+    rate: float = 3.5
+
+
+@app.post("/simulate-gradual-degradation")
+async def simulate_gradual_degradation(req: GradualDegradationRequest):
     """
-    Inject an anomaly into the live simulation (real ProtoTwin or mock).
-    Accepts JSON body: {scenario, joint, value, anomaly_type}
+    Simulate a slowly rising condition in that robot leading to complete breakdown.
+    Ramps torque on the target joint until critical safety threshold is breached.
     """
     if not sim_client:
         raise HTTPException(status_code=400, detail="Simulation client not connected")
 
-    joint = req.joint
-    anomaly_type = req.anomaly_type
-    value = req.value
+    if hasattr(sim_client, "start_gradual_degradation"):
+        sim_client.start_gradual_degradation(joint=req.joint, rate_per_sec=req.rate)
+        return {
+            "status": "degradation_started",
+            "joint": req.joint,
+            "rate": req.rate,
+            "message": f"Simulating gradual harmonic drive wear on Joint {req.joint}. Torque drifting upward...",
+        }
+    else:
+        # Fallback to direct injection if using real ProtoTwin client
+        return await inject_anomaly(InjectAnomalyRequest(joint=req.joint, value=148.0, anomaly_type="torque"))
+
+
+@app.post("/emergency-stop")
+async def emergency_stop():
+    """Manually engage emergency safety stop."""
+    if not sim_client:
+        raise HTTPException(status_code=400, detail="Simulation client not connected")
+
+    if hasattr(sim_client, "trigger_emergency_stop"):
+        sim_client.trigger_emergency_stop()
+
+    return {"status": "stopped", "message": "EMERGENCY SAFETY STOP ENGAGED. Arm halted."}
+
+
+@app.post("/reset-safety-stop")
+async def reset_safety_stop():
+    """Clear emergency stop and resume normal machine operation."""
+    if not sim_client:
+        raise HTTPException(status_code=400, detail="Simulation client not connected")
+
+    if hasattr(sim_client, "reset_emergency_stop"):
+        sim_client.reset_emergency_stop()
+
+    return {"status": "resumed", "message": "Emergency safety stop cleared. Pick-and-place resumed."}
+
+
+@app.post("/inject-anomaly")
+async def inject_anomaly(
+    joint: int | None = None,
+    value: float | None = None,
+    anomaly_type: str | None = None,
+    req: InjectAnomalyRequest | None = None,
+):
+    """
+    Inject an anomaly into the live simulation (real ProtoTwin or mock).
+    Accepts both JSON body and query parameters for full compatibility.
+    """
+    if not sim_client:
+        raise HTTPException(status_code=400, detail="Simulation client not connected")
+
+    act_joint = (req.joint if req else None) if (joint is None and req) else (joint if joint is not None else 3)
+    act_type = (req.anomaly_type if req else None) if (anomaly_type is None and req) else (anomaly_type or "torque")
+    act_value = (req.value if req else None) if (value is None and req) else (value if value is not None else 185.0)
 
     if isinstance(sim_client, MockProtoTwinClient):
-        sim_client.inject_anomaly(joint=joint, anomaly_type=anomaly_type, magnitude=value)
+        sim_client.inject_anomaly(joint=act_joint, anomaly_type=act_type, magnitude=act_value)
     elif isinstance(sim_client, ProtoTwinClient):
         from sim.inject_anomaly import get_signal_address
         try:
-            addr = get_signal_address(joint, anomaly_type)
-            sim_client.write_signal(addr, value)
+            addr = get_signal_address(act_joint, act_type)
+            sim_client.write_signal(addr, act_value)
             await sim_client.step()
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Failed writing to ProtoTwin signal: {e}")
 
     return {
         "status": "injected",
-        "joint": joint,
-        "type": anomaly_type,
-        "value": value,
-        "message": f"Anomaly injected: joint_{joint}_{anomaly_type} = {value}",
+        "joint": act_joint,
+        "type": act_type,
+        "value": act_value,
+        "message": f"Anomaly injected: joint_{act_joint}_{act_type} = {act_value}",
     }
 
 
 @app.post("/clear-anomaly")
 async def clear_anomaly():
-    """Clear any injected anomaly."""
+    """Clear any injected anomaly and reset safety stops."""
     if not sim_client:
         raise HTTPException(status_code=400, detail="Simulation client not connected")
 
-    if isinstance(sim_client, MockProtoTwinClient):
+    if hasattr(sim_client, "clear_anomaly"):
         sim_client.clear_anomaly()
 
     return {"status": "cleared"}

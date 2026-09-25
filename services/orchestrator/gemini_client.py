@@ -139,25 +139,29 @@ Cite the referenced manual sections where applicable."""
         machine_id: str,
         user_message: str,
         citations: list[dict[str, Any]],
+        sensor_context: str = "",
     ) -> dict[str, Any]:
         """
-        Generate conversational technician answer cited strictly from documentation.
-        Attempts PRIMARY_MODEL (gemini-3.6-flash) first, then BACKUP_MODEL (gemini-3.7-flash).
+        Generate conversational technician answer cited from documentation
+        and optionally enriched with live sensor telemetry data.
+        Attempts PRIMARY_MODEL first, then BACKUP_MODEL.
         """
         context_str = "\n\n".join([
             f"[Source: {c['source_ref']}]\n{c['chunk_text']}"
             for c in citations
         ])
 
+        sensor_block = f"\n{sensor_context}\n" if sensor_context else ""
+
         prompt = f"""You are Tenure, the industrial AI technician assistant for robot asset '{machine_id}'.
 The plant technician asks: "{user_message}"
-
+{sensor_block}
 Retrieved technical documentation context:
 ---
 {context_str if context_str else "No specific manual chunks retrieved."}
 ---
 
-Answer the technician accurately, concisely, and cite the document references provided."""
+Answer the technician accurately and concisely. If the question relates to sensor readings, downtime, revenue, or repair estimates, use the live telemetry data provided above. Cite document references where applicable."""
 
         client = self._get_client()
         if client:

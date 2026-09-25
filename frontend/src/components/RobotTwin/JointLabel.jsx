@@ -16,7 +16,7 @@ export default function JointLabel({ name, value, torque, unit = '°', status = 
         whiteSpace: 'nowrap',
       }}
     >
-      <div className={`robot-joint-chip glass-subtle ${isAnomaly ? 'joint-label-anomaly' : ''}`}>
+      <div className={`robot-joint-chip ${isAnomaly ? 'joint-label-anomaly' : ''}`}>
         <span
           className="joint-chip-dot"
           style={{ backgroundColor: statusColor }}

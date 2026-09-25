@@ -95,32 +95,57 @@
 .robot-joint-chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 8px;
-  background: rgba(44, 39, 36, 0.85);
-  backdrop-filter: blur(6px);
-  color: #FFFFFF;
-  border-radius: var(--radius-sm, 6px);
-  font-size: 0.7rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  gap: 7px;
+  padding: 5px 12px;
+  background: rgba(255, 251, 245, 0.94);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #1A1614 !important;
+  border-radius: 9999px;
+  font-size: 0.76rem;
+  box-shadow: 0 4px 16px rgba(51, 36, 21, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(226, 205, 178, 0.9);
   transition: transform 0.15s ease;
 }
 
 .robot-joint-chip.joint-label-anomaly {
-  background: rgba(192, 86, 70, 0.95);
+  background: rgba(178, 58, 46, 0.95);
   border-color: #FFA596;
+  color: #FFFFFF !important;
+}
+
+.robot-joint-chip.joint-label-anomaly .joint-chip-name,
+.robot-joint-chip.joint-label-anomaly .joint-chip-val,
+.robot-joint-chip.joint-label-anomaly .joint-chip-torque {
+  color: #FFFFFF !important;
+}
+
+.joint-chip-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .joint-chip-name {
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.02em;
+  color: #1A1614 !important;
 }
 
 .joint-chip-val {
-  color: #DDD6CE;
-  font-size: 0.68rem;
+  color: #5C4B3C !important;
+  font-size: 0.74rem;
+  font-weight: 600;
 }
+
+.joint-chip-torque {
+  color: #1A1614 !important;
+  font-size: 0.74rem;
+  font-weight: 700;
+  margin-left: 2px;
+}
+
 
 /* Anomaly Camera Focus Banner */
 .twin-anomaly-focus-banner {

@@ -169,20 +169,20 @@ export function TCPCard({ data }) {
 
   return (
     <div className="sensor-card glass glass-sheen sensor-card--ok sensor-card--tcp">
-      <div className="sensor-card__header">
-        <div>
-          <div className="sensor-card__name">Tool Position</div>
-          <div className="sensor-card__label font-mono">TCP · Cartesian Coordinates</div>
+      <div className="sensor-card__header sensor-card__header--tcp">
+        <div className="sensor-card__titles">
+          <div className="sensor-card__name font-heading">Tool Position (TCP)</div>
+          <div className="sensor-card__label font-mono">Cartesian [X, Y, Z] Coordinates</div>
         </div>
-        <div className="sensor-card__status">
+        <div className="sensor-card__status font-mono">
           <StatusDot status="ok" />
-          Working normally
+          <span>Active</span>
         </div>
       </div>
 
       <div className="sensor-card__tcp-grid">
         <div className="sensor-card__tcp-axis">
-          <span className="sensor-card__tcp-label">X</span>
+          <span className="sensor-card__tcp-label font-mono">X Axis</span>
           <span className="sensor-card__tcp-value font-mono">
             <NumberFlow
               value={data.x}
@@ -191,7 +191,7 @@ export function TCPCard({ data }) {
           </span>
         </div>
         <div className="sensor-card__tcp-axis">
-          <span className="sensor-card__tcp-label">Y</span>
+          <span className="sensor-card__tcp-label font-mono">Y Axis</span>
           <span className="sensor-card__tcp-value font-mono">
             <NumberFlow
               value={data.y}
@@ -200,7 +200,7 @@ export function TCPCard({ data }) {
           </span>
         </div>
         <div className="sensor-card__tcp-axis">
-          <span className="sensor-card__tcp-label">Z</span>
+          <span className="sensor-card__tcp-label font-mono">Z Axis</span>
           <span className="sensor-card__tcp-value font-mono">
             <NumberFlow
               value={data.z}
@@ -211,4 +211,5 @@ export function TCPCard({ data }) {
       </div>
     </div>
   );
+
 }

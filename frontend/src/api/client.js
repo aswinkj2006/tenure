@@ -124,12 +124,13 @@ export async function diagnoseAnomaly(anomalyId) {
 
 // ── Feedback ──
 
-export async function sendFeedback({ diagnosis_id, outcome, confirmed_cause }) {
+export async function sendFeedback(payload) {
+  const body = typeof payload === 'object' ? payload : { diagnosis_id: arguments[0], outcome: arguments[1], confirmed_cause: arguments[2] };
   if (!USE_MOCKS) {
     try {
       const data = await request('/feedback', {
         method: 'POST',
-        body: JSON.stringify({ diagnosis_id, outcome, confirmed_cause }),
+        body: JSON.stringify(body),
       });
       return data;
     } catch (err) {
@@ -138,6 +139,10 @@ export async function sendFeedback({ diagnosis_id, outcome, confirmed_cause }) {
   }
   return { status: 'ok', feedback_id: 'fb-mock-001' };
 }
+
+export const submitFeedback = sendFeedback;
+export const getAnomalies = getLogs;
+
 
 // ── Logs ──
 

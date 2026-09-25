@@ -22,22 +22,22 @@ PYTHON_EXE = sys.executable
 SERVICES = [
     {
         "name": "Orchestrator",
-        "cmd": [PYTHON_EXE, "-m", "uvicorn", "services.orchestrator.main:app", "--port", "8000", "--host", "0.0.0.0"],
+        "cmd": [PYTHON_EXE, "-m", "uvicorn", "services.orchestrator.main:app", "--port", "8000", "--host", "0.0.0.0", "--reload"],
         "port": 8000,
     },
     {
         "name": "Anomaly Service",
-        "cmd": [PYTHON_EXE, "-m", "uvicorn", "services.anomaly_service.main:app", "--port", "8001", "--host", "0.0.0.0"],
+        "cmd": [PYTHON_EXE, "-m", "uvicorn", "services.anomaly_service.main:app", "--port", "8001", "--host", "0.0.0.0", "--reload"],
         "port": 8001,
     },
     {
         "name": "Alert Service",
-        "cmd": [PYTHON_EXE, "-m", "uvicorn", "services.alert_service.main:app", "--port", "8002", "--host", "0.0.0.0"],
+        "cmd": [PYTHON_EXE, "-m", "uvicorn", "services.alert_service.main:app", "--port", "8002", "--host", "0.0.0.0", "--reload"],
         "port": 8002,
     },
     {
         "name": "RAG Service",
-        "cmd": [PYTHON_EXE, "-m", "uvicorn", "services.rag_service.main:app", "--port", "8003", "--host", "0.0.0.0"],
+        "cmd": [PYTHON_EXE, "-m", "uvicorn", "services.rag_service.main:app", "--port", "8003", "--host", "0.0.0.0", "--reload"],
         "port": 8003,
     },
 ]

@@ -99,11 +99,13 @@ class AnomalyDetector:
                 variance = sum((x - mean) ** 2 for x in buf) / len(buf)
                 std = math.sqrt(variance)
 
-                if std > 1e-4:
+                # Require non-trivial variation and magnitude before triggering Z-score anomaly
+                if std > 0.35 and abs(val - mean) > 2.0:
                     z_score = abs(val - mean) / std
                     if z_score >= self.z_threshold:
                         stat_dev = round(abs(val - mean), 2)
                         dev_mag = max(dev_mag, stat_dev)
+
                         if z_score >= 6.0:
                             sensor_sev_rank = max(sensor_sev_rank, 4)
                         elif z_score >= 4.5:

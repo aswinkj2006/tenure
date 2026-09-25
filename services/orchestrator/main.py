@@ -35,7 +35,27 @@ from services.orchestrator.logs_module import (
     generate_csv_export,
     generate_pdf_report,
 )
-
+from services.orchestrator.auth import register_user, authenticate_user
+from services.orchestrator.asset_tools import (
+    scrape_oem_specifications,
+    extract_specs_from_document,
+    convert_cad_to_digital_twin,
+)
+from services.orchestrator.dispatch_module import (
+    rank_technicians,
+    get_technician_ranking_with_fallback,
+    dispatch_technician,
+    get_all_technicians,
+    check_inventory,
+    find_vendors_for_part,
+    initiate_procurement,
+    get_procurement_orders,
+)
+from services.orchestrator.recurrence_engine import (
+    analyze_recurrence,
+    record_repair_outcome,
+    get_attribution_history,
+)
 
 
 # ──────────────────────────────────────────────────────────
@@ -58,6 +78,86 @@ class FeedbackRequest(BaseModel):
     diagnosis_id: str
     outcome: str  # 'confirmed' | 'corrected'
     confirmed_cause: str | None = None
+
+
+class RegisterRequest(BaseModel):
+    username: str
+    password: str
+    full_name: str
+    role: str = "Lead Mechatronics Technician"
+
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+
+class ScrapeSpecsRequest(BaseModel):
+    model_name: str
+
+
+class ExtractSpecsRequest(BaseModel):
+    text: str
+
+
+class CadConvertRequest(BaseModel):
+    filename: str
+
+
+class PinChartRequest(BaseModel):
+    chart_id: str | None = None
+    title: str
+    chart_type: str = "line"
+    chart_data: dict[str, Any]
+    user_id: str | None = "user-tech-01"
+    machine_id: str | None = "ur5e-001"
+
+
+class MachineOnboardRequest(BaseModel):
+    machine_id: str
+    name: str
+    type: str = "robot_arm"
+    location: str | None = "Bay 3"
+    manual_text: str | None = None
+    payload_kg: float | None = 5.0
+    reach_mm: float | None = 850.0
+
+
+class DispatchRequest(BaseModel):
+    anomaly_id: str
+    machine_id: str
+    flagged_sensors: list[str] = []
+    notes: str | None = None
+
+
+class RankRequest(BaseModel):
+    flagged_sensors: list[str] = []
+    severity: str = "medium"
+    machine_id: str | None = None
+
+
+class ProcurementRequest(BaseModel):
+    part_id: str
+    anomaly_id: str | None = None
+    quantity: int = 1
+    requested_by: str | None = "tenure-agent"
+
+
+class RecurrenceAnalysisRequest(BaseModel):
+    machine_id: str
+    anomaly_id: str
+    flagged_sensors: list[str]
+    severity: str = "high"
+
+
+class RepairOutcomeRequest(BaseModel):
+    dispatch_id: str
+    anomaly_id: str
+    machine_id: str
+    technician_id: str
+    flagged_sensors: list[str]
+    outcome: str  # 'resolved' | 'recurred' | 'partial' | 'unknown'
+    notes: str | None = None
 
 
 app = FastAPI(
@@ -89,32 +189,39 @@ gemini_client = GeminiTechnicianClient()
 
 
 def generate_chart_data(user_message: str, machine_id: str) -> dict[str, Any] | None:
-    """Detect chart/trend intent and formulate structured time-series data."""
+    """Detect chart, comparison, and trend intent and formulate structured time-series data."""
     lower = user_message.lower()
-    keywords = ["chart", "plot", "trend", "graph", "history", "profile", "timeline", "over time"]
+    keywords = ["chart", "plot", "trend", "graph", "history", "profile", "timeline", "over time", "compare", "vs", "versus", "comparison"]
     if not any(k in lower for k in keywords):
         return None
 
+    is_comparison = any(k in lower for k in ["compare", "vs", "versus", "comparison", "difference", "benchmark"])
     sensor = "joint_3_torque"
-    title = "Joint 3 Torque Trend"
+    title = "Joint 3 Torque Profile"
     y_label = "Torque (Nm)"
+    baseline_val = 48.0
+
     for j in range(1, 7):
         if f"joint {j}" in lower or f"joint_{j}" in lower or f"j{j}" in lower:
             if "vel" in lower:
                 sensor = f"joint_{j}_velocity"
-                title = f"Joint {j} Velocity Trend"
+                title = f"Joint {j} Velocity Profile"
                 y_label = "Velocity (rad/s)"
+                baseline_val = 0.45
             elif "pos" in lower:
                 sensor = f"joint_{j}_position"
-                title = f"Joint {j} Position Trend"
+                title = f"Joint {j} Position Profile"
                 y_label = "Position (rad)"
+                baseline_val = 0.8
             else:
                 sensor = f"joint_{j}_torque"
-                title = f"Joint {j} Torque Trend"
+                title = f"Joint {j} Torque Profile"
                 y_label = "Torque (Nm)"
+                baseline_val = [32.0, 58.0, 48.0, 11.5, 7.8, 3.2][j - 1]
             break
 
     points = []
+    baseline_points = []
     try:
         with get_connection() as conn:
             cursor = conn.cursor()
@@ -132,35 +239,404 @@ def generate_chart_data(user_message: str, machine_id: str) -> dict[str, Any] | 
 
         if db_rows and len(db_rows) >= 5:
             for r in reversed(db_rows):
-                points.append({"x": r[0], "y": round(float(r[1]), 2)})
+                val = round(float(r[1]), 2)
+                points.append({"x": r[0], "y": val})
+                baseline_points.append({"x": r[0], "y": round(baseline_val, 2)})
     except Exception as e:
         print(f"[orchestrator] Could not query sensor_readings: {e}")
 
     if not points:
         import math
         now = datetime.now(timezone.utc)
-        for i in range(12, 0, -1):
-            t = now.timestamp() - (i * 300)
+        for i in range(14, 0, -1):
+            t = now.timestamp() - (i * 180)
             iso = datetime.fromtimestamp(t, tz=timezone.utc).isoformat()
-            val = 25.0 + 8.0 * math.sin(i * 0.5)
+            val = baseline_val + (6.0 * math.sin(i * 0.4))
             if "velocity" in sensor:
-                val = 0.2 + 0.1 * math.sin(i * 0.5)
+                val = baseline_val + 0.1 * math.sin(i * 0.4)
             elif "position" in sensor:
-                val = 1.0 + 0.5 * math.sin(i * 0.5)
+                val = baseline_val + 0.3 * math.sin(i * 0.4)
             points.append({"x": iso, "y": round(val, 2)})
+            baseline_points.append({"x": iso, "y": round(baseline_val, 2)})
+
+    series = [
+        {
+            "name": f"{machine_id.upper()} Live Telemetry",
+            "data": points,
+            "color": "#B8723B",
+        }
+    ]
+
+    if is_comparison:
+        title = f"{title} — Comparative Baseline Analysis"
+        series.append({
+            "name": "Nominal Factory Baseline",
+            "data": baseline_points,
+            "color": "#4A6B82",
+        })
 
     return {
+        "id": f"chart-{uuid.uuid4().hex[:8]}",
         "chart_type": "line",
         "title": title,
-        "x_label": "Time",
+        "x_label": "Timeline",
         "y_label": y_label,
-        "series": [
-            {
-                "name": title,
-                "data": points,
-            }
-        ],
+        "is_comparison": is_comparison,
+        "series": series,
+        "can_pin": True,
         "pin_to_dashboard": False,
+    }
+
+
+# ──────────────────────────────────────────────────────────
+# Auth, Asset Onboarding, and Pinned Charts Endpoints
+# ──────────────────────────────────────────────────────────
+
+@app.post("/api/auth/register")
+async def api_register(req: RegisterRequest):
+    """Register a new technician or operator into SQLite with salted password hashing."""
+    try:
+        user = register_user(
+            username=req.username,
+            password=req.password,
+            full_name=req.full_name,
+            role=req.role,
+        )
+        return {"status": "success", "user": user}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/api/auth/login")
+async def api_login(req: LoginRequest):
+    """Authenticate user credentials against PBKDF2 hash."""
+    user = authenticate_user(req.username, req.password)
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid credentials. Check username and password.")
+    return {"status": "success", "user": user}
+
+
+@app.post("/api/scrape-specs")
+async def api_scrape_specs(req: ScrapeSpecsRequest):
+    """Real-time simulated OEM datasheet scraping by model name."""
+    return scrape_oem_specifications(req.model_name)
+
+
+@app.post("/api/extract-specs")
+async def api_extract_specs(req: ExtractSpecsRequest):
+    """Extract kinematic limits and specifications from uploaded documents."""
+    return extract_specs_from_document(req.text, gemini_client)
+
+
+@app.post("/api/cad-convert")
+async def api_cad_convert(req: CadConvertRequest):
+    """Compile 3D CAD files (STEP/IGES) into interactive Digital Twin rigs."""
+    return convert_cad_to_digital_twin(req.filename)
+
+
+@app.get("/api/charts/pinned")
+async def get_pinned_charts(machine_id: str | None = None):
+    """Retrieve all pinned comparison and telemetry charts from SQLite."""
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        query = "SELECT id, user_id, machine_id, title, chart_type, chart_data, created_at FROM pinned_charts"
+        params = []
+        if machine_id:
+            query += " WHERE machine_id = ?"
+            params.append(machine_id)
+        query += " ORDER BY created_at DESC"
+        cursor.execute(query, params)
+        rows = cursor.fetchall()
+        charts = []
+        for r in rows:
+            try:
+                cdata = json.loads(r[5]) if r[5] else {}
+            except Exception:
+                cdata = {}
+            charts.append({
+                "id": r[0],
+                "user_id": r[1],
+                "machine_id": r[2],
+                "title": r[3],
+                "chart_type": r[4],
+                "chart_data": cdata,
+                "created_at": r[6],
+                "pinned": True,
+            })
+        return {"pinned_charts": charts}
+
+
+@app.post("/api/charts/pin")
+async def pin_chart(req: PinChartRequest):
+    """Pin a chart to the dashboard permanently."""
+    chart_id = req.chart_id or f"chart-{uuid.uuid4().hex[:8]}"
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            INSERT OR REPLACE INTO pinned_charts (id, user_id, machine_id, title, chart_type, chart_data)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (chart_id, req.user_id, req.machine_id, req.title, req.chart_type, json.dumps(req.chart_data)),
+        )
+        conn.commit()
+    return {"status": "pinned", "chart_id": chart_id}
+
+
+@app.delete("/api/charts/pin/{chart_id}")
+async def unpin_chart(chart_id: str):
+    """Unpin a chart from the dashboard."""
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM pinned_charts WHERE id = ?", (chart_id,))
+        conn.commit()
+    return {"status": "unpinned", "chart_id": chart_id}
+
+
+# ──────────────────────────────────────────────────────────
+# Technician Dispatch Endpoints
+# ──────────────────────────────────────────────────────────
+
+@app.get("/api/technicians")
+async def api_list_technicians():
+    """Return full technician roster with availability and skills."""
+    return {"technicians": get_all_technicians()}
+
+
+@app.post("/api/technicians/rank")
+async def api_rank_technicians(req: RankRequest):
+    """
+    Rank all technicians for a given fault profile and machine.
+    Returns sorted list with composite score breakdown and availability fallback trace.
+    """
+    result = get_technician_ranking_with_fallback(
+        flagged_sensors=req.flagged_sensors,
+        severity=req.severity,
+        machine_id=req.machine_id,
+    )
+    return result
+
+
+@app.post("/api/dispatch")
+async def api_dispatch(req: DispatchRequest):
+    """
+    Agentic technician dispatch — automatically selects and assigns
+    the best available technician based on the fault profile.
+    """
+    result = dispatch_technician(
+        anomaly_id=req.anomaly_id,
+        machine_id=req.machine_id,
+        flagged_sensors=req.flagged_sensors,
+        notes=req.notes,
+    )
+    if "error" in result:
+        raise HTTPException(status_code=503, detail=result["error"])
+    return result
+
+
+@app.post("/api/dispatch/{assignment_id}/complete")
+async def api_complete_dispatch(assignment_id: str):
+    """Mark a dispatch assignment as completed and free the technician."""
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT technician_id FROM dispatch_assignments WHERE id = ?",
+            (assignment_id,)
+        )
+        row = cursor.fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="Assignment not found")
+        tech_id = row[0]
+        cursor.execute(
+            "UPDATE dispatch_assignments SET status = 'completed', completed_at = ? WHERE id = ?",
+            (datetime.now(timezone.utc).isoformat(), assignment_id)
+        )
+        cursor.execute(
+            "UPDATE technicians SET availability = 'available', current_task_id = NULL WHERE id = ?",
+            (tech_id,)
+        )
+        conn.commit()
+    return {"status": "completed", "assignment_id": assignment_id}
+
+
+@app.get("/api/dispatch/history")
+async def api_dispatch_history(limit: int = 20):
+    """Recent dispatch assignments with technician and anomaly info."""
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT da.id, da.anomaly_id, da.machine_id, da.rank_score,
+                   da.assigned_at, da.status, da.estimated_hours, da.completed_at, da.notes,
+                   t.name as technician_name, t.email, t.certification_level, t.specializations
+            FROM dispatch_assignments da
+            JOIN technicians t ON da.technician_id = t.id
+            ORDER BY da.assigned_at DESC
+            LIMIT ?
+        """, (limit,))
+        rows = cursor.fetchall()
+    cols = ["id", "anomaly_id", "machine_id", "rank_score", "assigned_at", "status",
+            "estimated_hours", "completed_at", "notes", "technician_name", "email",
+            "certification_level", "specializations"]
+    return {"assignments": [dict(zip(cols, r)) for r in rows]}
+
+
+# ──────────────────────────────────────────────────────────
+# Inventory & Procurement Endpoints
+# ──────────────────────────────────────────────────────────
+
+@app.get("/api/inventory")
+async def api_inventory(machine_id: str | None = None, category: str | None = None):
+    """Return parts inventory, optionally filtered by machine or category."""
+    parts = check_inventory(machine_id or "", category)
+    return {"parts": parts, "total": len(parts)}
+
+
+@app.get("/api/inventory/vendors/{part_number}")
+async def api_vendors_for_part(part_number: str):
+    """Return all vendors that can supply a specific part number."""
+    vendors = find_vendors_for_part(part_number)
+    return {"vendors": vendors, "part_number": part_number}
+
+
+@app.get("/api/vendors")
+async def api_list_vendors():
+    """List all registered vendors."""
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, name, contact_email, contact_phone, slack_channel, catalog, lead_time_days, rating FROM vendors ORDER BY rating DESC")
+        rows = cursor.fetchall()
+    cols = ["id", "name", "contact_email", "contact_phone", "slack_channel", "catalog", "lead_time_days", "rating"]
+    vendors = []
+    for r in rows:
+        v = dict(zip(cols, r))
+        v["catalog"] = json.loads(v["catalog"])
+        vendors.append(v)
+    return {"vendors": vendors}
+
+
+@app.post("/api/procurement/initiate")
+async def api_initiate_procurement(req: ProcurementRequest):
+    """
+    Agentic procurement flow:
+    - Check internal inventory for the part
+    - If OOS, find best vendor and generate Slack notification (simulated)
+    - Record the procurement order in the database
+    """
+    result = initiate_procurement(
+        part_id=req.part_id,
+        anomaly_id=req.anomaly_id,
+        quantity=req.quantity,
+        requested_by=req.requested_by,
+    )
+    if "error" in result:
+        raise HTTPException(status_code=404, detail=result["error"])
+    return result
+
+
+@app.get("/api/procurement/orders")
+async def api_procurement_orders(anomaly_id: str | None = None):
+    """List procurement orders, optionally filtered by anomaly."""
+    orders = get_procurement_orders(anomaly_id)
+    return {"orders": orders, "total": len(orders)}
+
+
+# ──────────────────────────────────────────────────────────
+# xAI Recurrence Intelligence Endpoints
+# ──────────────────────────────────────────────────────────
+
+@app.post("/api/recurrence/analyze")
+async def api_recurrence_analyze(req: RecurrenceAnalysisRequest):
+    """
+    Run the full xAI Recurrence Attribution Engine.
+
+    Analyzes repair history for this machine + fault pattern and produces:
+    - Attribution verdict (machine_fault / technician_skill_gap / systemic / ambiguous)
+    - Confidence score
+    - Step-by-step reasoning chain (xAI explainability)
+    - Evidence dict
+    - Excluded technicians for smart re-dispatch
+    - Recommended action
+
+    This is NOT a black-box classifier — every decision step is named, 
+    inspectable, and grounded in structured evidence.
+    """
+    result = analyze_recurrence(
+        machine_id=req.machine_id,
+        anomaly_id=req.anomaly_id,
+        flagged_sensors=req.flagged_sensors,
+        current_severity=req.severity,
+        llm_client=gemini_client,
+    )
+    return result
+
+
+@app.post("/api/recurrence/outcome")
+async def api_record_outcome(req: RepairOutcomeRequest):
+    """
+    Record the actual outcome of a repair attempt.
+    Call this when a technician marks their work complete and
+    the system observes whether the fault re-appeared.
+    """
+    result = record_repair_outcome(
+        dispatch_id=req.dispatch_id,
+        anomaly_id=req.anomaly_id,
+        machine_id=req.machine_id,
+        technician_id=req.technician_id,
+        flagged_sensors=req.flagged_sensors,
+        outcome=req.outcome,
+        notes=req.notes,
+    )
+    return result
+
+
+@app.get("/api/recurrence/history")
+async def api_attribution_history(machine_id: str = "ur5e-001", limit: int = 10):
+    """Retrieve past fault attribution analyses for a machine."""
+    history = get_attribution_history(machine_id, limit)
+    return {"attributions": history, "total": len(history)}
+
+
+@app.post("/api/machines/onboard")
+@app.post("/machines/onboard")
+async def onboard_machine(payload: MachineOnboardRequest):
+    """
+    Register a new industrial asset, write to machines table, and index manual chunks into vector memory.
+    """
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            INSERT OR REPLACE INTO machines (machine_id, name, type, install_date)
+            VALUES (?, ?, ?, datetime('now'))
+            """,
+            (payload.machine_id, payload.name, payload.type),
+        )
+        conn.commit()
+
+    # Ingest manual text into vector store if provided
+    if payload.manual_text:
+        try:
+            chunks = [
+                {
+                    "text": payload.manual_text,
+                    "source_ref": f"{payload.machine_id}_technical_manual",
+                    "section": "OEM Specifications & Kinematics",
+                }
+            ]
+            vector_store.ingest_chunks(
+                machine_id=payload.machine_id,
+                chunks=chunks,
+                doc_type="manual",
+            )
+        except Exception as e:
+            print(f"[orchestrator] Could not index manual text for {payload.machine_id}: {e}")
+
+    return {
+        "status": "created",
+        "machine_id": payload.machine_id,
+        "name": payload.name,
+        "type": payload.type,
+        "message": f"Asset {payload.name} successfully registered with vector memory.",
     }
 
 
@@ -683,7 +1159,8 @@ async def diagnose_anomaly(payload: DiagnoseRequest):
 @app.post("/api/chat")
 async def chat(payload: ChatRequest):
     """
-    Conversational assistant for machinery questions, strictly grounded in documentation chunks.
+    Conversational assistant for machinery questions, grounded in both
+    documentation chunks (RAG) and live sensor telemetry (function context).
     """
     target_machine = payload.machine_id or "ur5e-001"
     conv_id = payload.conversation_id or str(uuid.uuid4())
@@ -694,10 +1171,70 @@ async def chat(payload: ChatRequest):
         top_k=3,
     )
 
+    # ── Inject live sensor context ──────────────────────────────────
+    sensor_context = ""
+    try:
+        with get_connection() as conn:
+            cursor = conn.cursor()
+            # Latest reading per sensor
+            cursor.execute("""
+                SELECT sensor_name, value, ts
+                FROM sensor_readings
+                WHERE machine_id = ?
+                GROUP BY sensor_name
+                ORDER BY id DESC
+                LIMIT 20
+            """, (target_machine,))
+            readings = cursor.fetchall()
+
+            # Today's anomaly count and open count
+            cursor.execute("""
+                SELECT COUNT(*), SUM(CASE WHEN status='open' THEN 1 ELSE 0 END)
+                FROM anomaly_records
+                WHERE machine_id = ? AND created_at >= datetime('now', '-1 day')
+            """, (target_machine,))
+            anom_row = cursor.fetchone()
+            today_anomalies = anom_row[0] or 0
+            open_anomalies = anom_row[1] or 0
+
+            # Average downtime estimation
+            cursor.execute("""
+                SELECT COUNT(*) FROM anomaly_records
+                WHERE machine_id = ? AND status='open'
+            """, (target_machine,))
+            open_total = cursor.fetchone()[0] or 0
+
+        if readings:
+            readings_str = "\n".join([f"  - {r[0]}: {round(r[1], 2)} (at {r[2]})" for r in readings])
+            # Rough downtime estimate: each open critical = 4h, high = 2h, medium = 1h
+            est_downtime_h = open_total * 1.8  # simplified heuristic
+            est_revenue_hr = 2400  # USD/hr for robotic welding cell
+            revenue_loss = round(est_downtime_h * est_revenue_hr, 0)
+            profit_if_running = round((24 - est_downtime_h) * est_revenue_hr * 0.35, 0)
+
+            sensor_context = f"""
+--- LIVE TELEMETRY DATA (as of now) ---
+Machine: {target_machine}
+Latest Sensor Readings:
+{readings_str}
+
+Operational Intelligence:
+  - Anomalies in last 24h: {today_anomalies}
+  - Currently open anomalies: {open_anomalies}
+  - Estimated downtime today: {est_downtime_h:.1f} hours
+  - Estimated revenue at risk: ${revenue_loss:,.0f} USD
+  - Potential profit in current runtime (35% margin): ${profit_if_running:,.0f} USD
+  - Recommended action: {'Immediate inspection required' if open_anomalies > 0 else 'Continue nominal operation'}
+--- END TELEMETRY DATA ---
+"""
+    except Exception as e:
+        print(f"[chat] Could not fetch sensor context: {e}")
+
     reply_res = gemini_client.generate_chat_response(
         machine_id=target_machine,
         user_message=payload.message,
         citations=citations,
+        sensor_context=sensor_context,
     )
 
     chart_data = generate_chart_data(payload.message, target_machine)
@@ -796,26 +1333,42 @@ async def submit_feedback(request: Request):
     except Exception as e:
         print(f"[orchestrator] Feedback insert note: {e}")
 
-    if outcome == "corrected" and cause:
+    # Continuous learning: Re-index resolution into vector store (both confirmed and corrected)
+    try:
+        prefix = "CONFIRMED RESOLUTION & VERIFIED REPAIR" if outcome == "confirmed" else "CORRECTED DIAGNOSIS & TECHNICIAN GROUND TRUTH"
+        learned_chunk = {
+            "text": f"{prefix} for {machine_id}: {cause}. Verified by certified on-site technician.",
+            "source_ref": f"Technician_Feedback_{feedback_id[:8]}",
+            "section": "Human-in-the-Loop Continuous Learning",
+        }
+        vector_store.ingest_chunks(
+            machine_id=machine_id,
+            chunks=[learned_chunk],
+            doc_type="feedback",
+        )
+    except Exception as e:
+        print(f"[orchestrator] Could not index feedback into vector store: {e}")
+
+    # Auto-resolve and restart machine upon successful repair confirmation
+    if outcome == "confirmed":
         try:
-            learned_chunk = {
-                "text": f"VERIFIED TECHNICIAN RESOLUTION for {machine_id}: {cause}.",
-                "source_ref": f"Technician_Correction_{feedback_id[:8]}",
-                "section": "Human-in-the-Loop Feedback",
-            }
-            vector_store.ingest_chunks(
-                machine_id=machine_id,
-                chunks=[learned_chunk],
-                doc_type="feedback",
-            )
-        except Exception:
-            pass
+            import httpx
+            async with httpx.AsyncClient(timeout=2.5) as hclient:
+                await hclient.post("http://localhost:8001/clear-anomaly")
+                await hclient.post("http://localhost:8001/reset-safety-stop")
+                anom_id = body.get("anomaly_id")
+                if anom_id:
+                    await hclient.post(f"http://localhost:8002/alerts/{anom_id}/resolve")
+            print(f"[orchestrator] Machine {machine_id} safety stop cleared and normal pick-and-place operation resumed!")
+        except Exception as se:
+            print(f"[orchestrator] Note on auto-restart broadcast: {se}")
 
     return {
         "status": "ok",
         "feedback_id": feedback_id,
         "outcome": outcome,
-        "continuous_learning_updated": outcome == "corrected",
+        "machine_restarted": outcome == "confirmed",
+        "continuous_learning_updated": True,
     }
 
 
@@ -839,9 +1392,11 @@ async def get_logs(
     limit: int = 50,
     offset: int = 0,
 ):
+
     search_term = q or search
     actual_limit = per_page if per_page is not None else limit
     actual_offset = ((page - 1) * actual_limit) if (page is not None and page > 0) else offset
+
 
     return query_logs(
         machine_id=machine_id,

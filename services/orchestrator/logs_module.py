@@ -13,9 +13,11 @@ Provides filtering, CSV export, and PDF incident audit reports.
 import csv
 import io
 import json
+import re
 from typing import Any
 
 from db.init_db import get_connection
+
 
 
 def query_logs(
@@ -29,6 +31,8 @@ def query_logs(
     limit: int = 50,
     offset: int = 0,
 ) -> dict[str, Any]:
+
+
     """
     Query joined issue history with flexible filtering and search.
     """
@@ -87,6 +91,7 @@ def query_logs(
         ORDER BY a.created_at DESC
         LIMIT ? OFFSET ?
     """
+
     params.extend([limit, offset])
 
     with get_connection() as conn:
@@ -111,7 +116,21 @@ def query_logs(
         deviation = json.loads(r[5]) if r[5] else {}
         citations = json.loads(r[11]) if r[11] else []
         diag_output = r[10] or ""
-        diag_summary = (diag_output[:140] + "...") if len(diag_output) > 140 else diag_output
+        
+        if diag_output:
+            # Clean markdown symbols, asterisks, and newlines for clean single-line summary
+            clean_diag = re.sub(r'[*#_`]', '', diag_output.replace("\n", " ")).strip()
+            clean_diag = re.sub(r'\s+', ' ', clean_diag)
+            diag_summary = (clean_diag[:135] + "...") if len(clean_diag) > 135 else clean_diag
+        elif flagged:
+            sensors_fmt = ", ".join(s.replace("_", " ").title() for s in flagged)
+            dev_str = ""
+            if deviation:
+                first_k = next(iter(deviation))
+                dev_str = f" (+{deviation[first_k]} deviation)"
+            diag_summary = f"{r[6].capitalize()} excursion detected on {sensors_fmt}{dev_str} exceeding nominal safety envelope."
+        else:
+            diag_summary = f"Mechanical anomaly flagged on {r[2] or r[1]} during active operational cycle."
 
         issues.append({
             "anomaly_id": r[0],

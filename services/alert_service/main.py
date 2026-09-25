@@ -146,6 +146,23 @@ async def create_alert(payload: AlertCreateRequest):
         for ws in disconnected:
             alert_subscribers[machine_id].remove(ws)
 
+    # 3. Automated Slack alert to technician
+    if payload.severity in ("critical", "high"):
+        try:
+            from services.alert_service.slack_notifier import send_slack_breakdown_alert
+            asyncio.get_event_loop().run_in_executor(
+                None,
+                send_slack_breakdown_alert,
+                payload.anomaly_id,
+                payload.machine_id,
+                payload.severity,
+                payload.flagged_sensors,
+                payload.deviation_magnitude,
+                payload.message,
+            )
+        except Exception as se:
+            print(f"[alert_service] Failed to schedule Slack notification: {se}")
+
     return {"status": "created", "alert": alert_obj}
 
 

@@ -51,6 +51,18 @@ export default function Dashboard() {
     fetchData();
   }, []);
 
+  // Load pinned charts from localStorage on mount (pin means forever, unpin means stays until reload)
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('tenure_pinned_charts');
+      if (stored) {
+        setPinnedCharts(JSON.parse(stored));
+      }
+    } catch (e) {
+      console.warn('Could not read pinned charts from localStorage:', e);
+    }
+  }, []);
+
   const handleSend = async (text) => {
     await sendMessage(text);
   };
@@ -60,14 +72,47 @@ export default function Dashboard() {
     if (lastMsg?.chart_data) {
       setPinnedCharts((prev) => {
         if (prev.some((c) => c.title === lastMsg.chart_data.title)) return prev;
-        return [...prev, lastMsg.chart_data];
+        return [...prev, { ...lastMsg.chart_data, pin_to_dashboard: false }];
       });
     }
   }, [messages]);
 
-  const handleTogglePin = (chartData, pinned) => {
-    if (!pinned) {
-      setPinnedCharts((prev) => prev.filter((c) => c.title !== chartData.title));
+  const handleTogglePin = async (chartData, pinned) => {
+    if (pinned) {
+      // Pin means forever: persist to localStorage & backend
+      const updated = pinnedCharts.map((c) =>
+        c.title === chartData.title ? { ...c, pin_to_dashboard: true } : c
+      );
+      setPinnedCharts(updated);
+      try {
+        const toSave = updated.filter((c) => c.pin_to_dashboard);
+        localStorage.setItem('tenure_pinned_charts', JSON.stringify(toSave));
+        await fetch('http://localhost:8000/api/charts/pin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: chartData.title,
+            chart_type: chartData.chart_type,
+            chart_data: chartData,
+          }),
+        });
+      } catch (err) {
+        console.warn('Backend pin note:', err);
+      }
+    } else {
+      // Unpin means temporary: remove from persistent storage, but keep in memory until reload
+      try {
+        const stored = localStorage.getItem('tenure_pinned_charts');
+        if (stored) {
+          const parsed = JSON.parse(stored).filter((c) => c.title !== chartData.title);
+          localStorage.setItem('tenure_pinned_charts', JSON.stringify(parsed));
+        }
+      } catch (err) {
+        console.warn('Unpin note:', err);
+      }
+      setPinnedCharts((prev) =>
+        prev.map((c) => (c.title === chartData.title ? { ...c, pin_to_dashboard: false } : c))
+      );
     }
   };
 
@@ -97,8 +142,9 @@ export default function Dashboard() {
   };
 
   const suggestionChips = [
+    'Compare UR5e torque vs nominal factory baseline',
+    'Compare Joint 3 elbow torque over time',
     'Show me elbow torque over the last hour',
-    'What was the cause of the last anomaly?',
     'Check calibration and TCP drift',
     'Explain recommended maintenance for UR5e',
   ];
@@ -195,24 +241,44 @@ export default function Dashboard() {
           </div>
 
           <div className="bento-machine-meta">
-            {machines.map((m) => (
-              <div key={m.machine_id} className="bento-meta-row">
-                <div className="bento-meta-left">
-                  <HealthScore score={m.health_score} size="sm" showLabel={false} />
-                  <div>
-                    <div className="bento-meta-status">
-                      <StatusDot status={healthToStatus(m.health_score)} />
-                      <span>{m.status === 'online' ? 'Real-time telemetry stream active' : m.status}</span>
+            {machines.map((m) => {
+              const scenarioTag = 
+                m.machine_id.includes('ur5e') ? 'Scenario 1: xAI Recurrence' :
+                m.machine_id.includes('kuka') ? 'Scenario 2: Tech Availability Fallback' :
+                m.machine_id.includes('fanuc') ? 'Scenario 3: Multi-Vendor Procurement' :
+                m.machine_id.includes('abb') ? 'Scenario 4: Live Telemetry & Yield' : 'Autonomous Fleet Unit';
+
+              const modelSub = 
+                m.machine_id.includes('ur5e') ? 'Universal Robots 6-DOF Cobot · Cell A' :
+                m.machine_id.includes('kuka') ? 'KUKA KR 10 Articulated Robot · Bay 2' :
+                m.machine_id.includes('fanuc') ? 'FANUC CRX-10iA Cobot · Line 1' :
+                m.machine_id.includes('abb') ? 'ABB IRB 1200 Precision Arm · Cell C' : m.name;
+
+              return (
+                <div
+                  key={m.machine_id}
+                  className="bento-meta-row"
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => navigate('/operations')}
+                >
+                  <div className="bento-meta-left">
+                    <HealthScore score={m.health_score || 94} size="sm" showLabel={false} />
+                    <div>
+                      <div className="bento-meta-status">
+                        <StatusDot status={healthToStatus(m.health_score || 94)} />
+                        <strong>{m.name || m.machine_id}</strong>
+                        <span className="bento-scenario-pill">{scenarioTag}</span>
+                      </div>
+                      <div className="bento-meta-sub">{modelSub}</div>
                     </div>
-                    <div className="bento-meta-sub">Universal Robots 6-DOF Manipulator</div>
+                  </div>
+                  <div className="bento-meta-right font-mono">
+                    <Clock size={13} />
+                    <span>{m.status === 'online' ? 'Nominal Telemetry' : relativeTime(m.last_anomaly_at)}</span>
                   </div>
                 </div>
-                <div className="bento-meta-right font-mono">
-                  <Clock size={13} />
-                  <span>Last issue {relativeTime(m.last_anomaly_at)}</span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </motion.div>
 

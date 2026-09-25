@@ -243,3 +243,52 @@
   color: var(--text-tertiary, #A8967F);
   font-family: var(--font-mono, monospace);
 }
+
+.auth-tab-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  background: rgba(226, 205, 178, 0.35);
+  padding: 4px;
+  border-radius: 14px;
+  border: 1px solid rgba(226, 205, 178, 0.6);
+}
+
+.auth-tab-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  color: #7A6552;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.auth-tab-btn--active {
+  background: #FFFBF5;
+  color: #B8723B;
+  box-shadow: 0 2px 8px rgba(51, 36, 21, 0.08);
+}
+
+.security-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(184, 114, 59, 0.08);
+  border: 1px solid rgba(184, 114, 59, 0.2);
+  border-radius: 10px;
+  font-size: 11px;
+  color: #8C5223;
+  line-height: 1.4;
+}
+
+.form-select {
+  cursor: pointer;
+}
