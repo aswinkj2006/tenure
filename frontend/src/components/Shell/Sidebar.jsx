@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Cpu, FileText, Command, PlusCircle, LogOut, Wrench } from 'lucide-react';
+import { LayoutDashboard, Cpu, FileText, Command, PlusCircle, LogOut, Wrench, ShieldAlert } from 'lucide-react';
 import { motion } from 'framer-motion';
 import StatusDot from '../common/StatusDot';
 import useSensorStore from '../../stores/sensorStore';
@@ -31,6 +31,7 @@ const navItems = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/machine/ur5e-001', label: 'Machine Twin', icon: Cpu },
   { to: '/operations', label: 'Operations Hub', icon: Wrench },
+  { to: '/action-center', label: 'Action Center', icon: ShieldAlert, badge: '2' },
   { to: '/logs', label: 'Audit Logs', icon: FileText },
   { to: '/onboard', label: 'Onboard Asset', icon: PlusCircle },
 ];
@@ -103,6 +104,20 @@ export default function Sidebar() {
               )}
               <Icon className="sidebar__link-icon" strokeWidth={1.5} />
               <span className="sidebar__link-label">{label}</span>
+              {item.badge && (
+                <span style={{
+                  marginLeft: 'auto',
+                  background: 'var(--terracotta, #c4623b)',
+                  color: '#fff',
+                  fontSize: '10px',
+                  fontWeight: '700',
+                  padding: '2px 6px',
+                  borderRadius: '9999px',
+                  lineHeight: '1',
+                }}>
+                  {item.badge}
+                </span>
+              )}
             </NavLink>
           );
         })}

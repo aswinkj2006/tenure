@@ -14,6 +14,7 @@ import OnboardPage from './pages/OnboardPage';
 import LoginPage from './pages/LoginPage';
 import TechnicianPortal from './pages/TechnicianPortal';
 import OperationsPage from './pages/OperationsPage';
+import ActionCenterPage from './pages/ActionCenterPage';
 import useSensorStore from './stores/sensorStore';
 import { pageTransitionVariants } from './utils/motion';
 import './App.css';
@@ -36,6 +37,7 @@ function AnimatedRoutes() {
           <Route path="/machine/:id" element={<MachinePage />} />
           <Route path="/logs" element={<LogsPage />} />
           <Route path="/operations" element={<OperationsPage />} />
+          <Route path="/action-center" element={<ActionCenterPage />} />
           <Route path="/onboard" element={<OnboardPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/technician/:anomalyId" element={<TechnicianPortal />} />

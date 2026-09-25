@@ -667,28 +667,40 @@ def compute_fleet_summary():
         avg_health = max(10.0, min(100.0, 100.0 - penalty))
 
         # Machines list
-        cursor.execute("SELECT machine_id, name, type, install_date FROM machines")
+        cursor.execute("""
+            SELECT machine_id, name, type, install_date, model, location,
+                   payload_kg, reach_mm, health_score, rul_hours, status
+            FROM machines
+        """)
         m_rows = cursor.fetchall()
 
         machines = []
         for m in m_rows:
+            m_id = m[0]
             cursor.execute(
                 "SELECT COUNT(*) FROM anomaly_records WHERE machine_id = ? AND status = 'open'",
-                (m[0],),
+                (m_id,),
             )
             m_alerts = cursor.fetchone()[0]
 
             cursor.execute(
                 "SELECT COUNT(*), MAX(ts) FROM anomaly_records WHERE machine_id = ?",
-                (m[0],),
+                (m_id,),
             )
             m_issue_stats = cursor.fetchone()
             total_issues = m_issue_stats[0] if m_issue_stats else 0
             last_anomaly_at = m_issue_stats[1] if m_issue_stats else None
 
-            h_status = "healthy" if avg_health >= 80 else "warning" if avg_health >= 50 else "critical"
-            loc = "Bay 3 — Robotic Welding Cell A" if "01" in m[0] or "ur5e" in m[0].lower() else "Bay 4 — Assembly Line B"
-            model_name = "Universal Robots UR5e (6-Axis)" if "ur5e" in m[0].lower() else f"Industrial Unit {m[2]}"
+            # Per-machine individual health score from database
+            raw_health = m[8] if m[8] is not None else 94.0
+            # If active alert on this specific machine, apply individual penalty
+            mach_health = max(10.0, min(100.0, raw_health - (m_alerts * 12.0)))
+            h_status = "healthy" if mach_health >= 80 else ("warning" if mach_health >= 50 else "critical")
+
+            loc = m[5] or ("Bay 3 — Precision Assembly" if "ur5e" in m_id.lower() else "Bay 4 — Heavy Robotics Cell")
+            model_name = m[4] or ("Universal Robots UR5e (6-Axis)" if "ur5e" in m_id.lower() else f"Industrial Manipulator {m[2]}")
+            m_rul = m[9] if m[9] is not None else (420.0 if m_alerts == 0 else 48.0)
+            m_status = m[10] or "online"
 
             # Attempt to get real current readings from anomaly service
             curr_readings = {
@@ -702,7 +714,7 @@ def compute_fleet_summary():
             }
             try:
                 import urllib.request
-                req = urllib.request.Request(f"http://localhost:8001/sensors/{m[0]}/latest", headers={"User-Agent": "Orchestrator"})
+                req = urllib.request.Request(f"http://localhost:8001/sensors/{m_id}/latest", headers={"User-Agent": "Orchestrator"})
                 with urllib.request.urlopen(req, timeout=0.8) as resp:
                     s_data = json.loads(resp.read().decode())
                     if "sensors" in s_data:
@@ -711,19 +723,19 @@ def compute_fleet_summary():
                 pass
 
             machines.append({
-                "machine_id": m[0],
+                "machine_id": m_id,
                 "name": m[1],
                 "model": model_name,
                 "machine_type": m[2],
                 "location": loc,
                 "install_date": m[3],
-                "status": "online",
-                "health_score": round(avg_health, 1),
+                "status": m_status,
+                "health_score": round(mach_health, 1),
                 "health_status": h_status,
                 "primary_driver": "J3 Harmonic Reducer" if m_alerts > 0 else None,
-                "rul_hours": 420.0 if m_alerts == 0 else 48.0,
-                "predicted_service_window": "Normal (>30 days)" if m_alerts == 0 else "Urgent (<48h)",
-                "oee_pct": 92.5 if m_alerts == 0 else 74.0,
+                "rul_hours": m_rul,
+                "predicted_service_window": "Normal (>30 days)" if mach_health >= 70 else "Urgent (<48h)",
+                "oee_pct": 94.5 if mach_health >= 80 else 76.0,
                 "open_tickets": m_alerts,
                 "active_alerts": m_alerts,
                 "total_issues": total_issues,

@@ -59,6 +59,12 @@ Translates engineering telemetry into executive economic metrics:
 ### 3.6 Multimodal Asset Onboarding
 Ingests CAD models (STEP, IGES, STL) with automatic B-Rep boundary tessellation and parses OEM technical service manuals via retrieval-augmented generation (RAG) to build persistent per-machine operational intelligence.
 
+### 3.7 Supervisor Action Center & Autonomous Governance Control Room
+Provides plant operations leadership with an executive oversight and control center (`/action-center`) tracking every autonomous action:
+- **Real-Time Intervention Stream**: Live audit trail of autonomous emergency kinetic stops, thermal speed throttling, dynamic dispatches, and multi-vendor purchase orders.
+- **xAI Causal Evidence Chains**: Transparent multi-step decision traces detailing the sensor differentials, historical cross-references, and financial impact metrics behind every automated decision.
+- **Supervisor-in-the-Loop Governance Controls**: One-click operational controls allowing plant supervisors to authorize out-of-stock purchase orders, approve whole-unit component replacements, and override or clear kinetic safety holds.
+
 ---
 
 ## 4. Architecture & Technology Stack

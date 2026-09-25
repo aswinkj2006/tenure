@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Clock, ArrowUpRight, Sparkles } from 'lucide-react';
+import { Clock, ArrowUpRight, Sparkles, ShieldAlert } from 'lucide-react';
 import NumberFlow from '@number-flow/react';
 import HealthScore from '../components/HealthScore/HealthScore';
 import RobotTwin from '../components/RobotTwin/RobotTwin';
@@ -217,21 +217,97 @@ export default function Dashboard() {
         )}
       </motion.div>
 
+      {/* Supervisor Action Center Callout Banner */}
+      <motion.div
+        variants={itemFadeUpVariants}
+        className="action-center-callout-banner glass glass-sheen"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '16px 20px',
+          borderRadius: 'var(--radius-lg, 14px)',
+          borderLeft: '4px solid var(--terracotta, #c4623b)',
+          marginBottom: '20px',
+          gap: '16px',
+          flexWrap: 'wrap',
+          cursor: 'pointer',
+        }}
+        onClick={() => navigate('/action-center')}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div style={{
+            width: '40px',
+            height: '40px',
+            borderRadius: '10px',
+            background: 'rgba(196, 98, 59, 0.1)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'var(--terracotta, #c4623b)',
+            flexShrink: 0,
+          }}>
+            <ShieldAlert size={22} />
+          </div>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <strong style={{ fontSize: '15px', color: 'var(--charcoal, #1f2022)' }}>
+                Supervisor Action Center — 2 Interventions Require Authorization
+              </strong>
+              <span style={{
+                background: 'rgba(196, 98, 59, 0.12)',
+                color: 'var(--terracotta, #c4623b)',
+                fontSize: '11px',
+                fontWeight: 700,
+                padding: '2px 8px',
+                borderRadius: '9999px',
+                textTransform: 'uppercase',
+              }}>
+                xAI Governance Gate
+              </span>
+            </div>
+            <div style={{ fontSize: '13px', color: 'var(--charcoal-muted, #5f6368)', marginTop: '2px' }}>
+              Autonomous emergency interlock on UR5e & out-of-stock PO cascade on FANUC CRX-10iA held for supervisor sign-off.
+            </div>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          className="bento-action-btn glass-subtle"
+          style={{
+            background: 'var(--terracotta, #c4623b)',
+            color: '#fff',
+            border: 'none',
+            padding: '8px 16px',
+            fontWeight: 600,
+            boxShadow: '0 4px 12px rgba(196, 98, 59, 0.25)',
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate('/action-center');
+          }}
+        >
+          <span>Open Action Center</span>
+          <ArrowUpRight size={14} />
+        </button>
+      </motion.div>
+
       {/* Bento Grid */}
       <div className="dashboard-bento-grid">
         {/* Machine Card with Compact Live 3D Twin */}
         <motion.div variants={itemFadeUpVariants} className="bento-card bento-machine-twin-card glass glass-sheen">
           <div className="bento-card-header">
             <div>
-              <span className="bento-card-category">Active Digital Twin</span>
-              <h3 className="bento-card-title">UR5e Demo Unit</h3>
+              <span className="bento-card-category">Active Digital Twin & Fleet Units</span>
+              <h3 className="bento-card-title">Industrial Fleet Workcells (4 Active)</h3>
             </div>
             <button
               type="button"
               className="bento-action-btn glass-subtle"
-              onClick={() => navigate('/machine/ur5e-001')}
+              onClick={() => navigate('/operations')}
             >
-              <span>Inspect Telemetry</span>
+              <span>Operations Hub</span>
               <ArrowUpRight size={14} />
             </button>
           </div>

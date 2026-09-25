@@ -37,35 +37,57 @@ from db.init_db import get_connection
 
 def seed_industrial_fleet():
     print("Seeding Tenure Industrial Fleet & Operations...")
-
-    with get_connection() as conn:
+    db_path = Path(__file__).parent.parent / "db" / "tenure.db"
+    conn = sqlite3.connect(str(db_path))
+    try:
         cursor = conn.cursor()
 
         # ──────────────────────────────────────────────────────────
         # 1. Accounts
         # ──────────────────────────────────────────────────────────
+        import uuid
         demo_accounts = [
             ("plantops.demo@industrial.com", "Tenure2026!", "Plant Reliability Director", "supervisor"),
             ("engineer@plantops.industrial", "Tenure2026!", "Senior Robotics Specialist", "technician"),
             ("demo@plantops.industrial", "Tenure2026!", "Site Operations Lead", "supervisor"),
         ]
 
-        for email, pwd, full_name, role in demo_accounts:
-            hashed = hash_password(pwd)
+        for username, pwd, full_name, role in demo_accounts:
+            pw_hash, salt = hash_password(pwd)
+            u_id = f"user-{uuid.uuid4().hex[:8]}"
             cursor.execute("""
-                INSERT INTO users (email, password_hash, full_name, role)
-                VALUES (?, ?, ?, ?)
-                ON CONFLICT(email) DO UPDATE SET
+                INSERT INTO users (id, username, password_hash, salt, full_name, role)
+                VALUES (?, ?, ?, ?, ?, ?)
+                ON CONFLICT(username) DO UPDATE SET
                     password_hash = excluded.password_hash,
+                    salt = excluded.salt,
                     full_name = excluded.full_name,
                     role = excluded.role
-            """, (email, hashed, full_name, role))
+            """, (u_id, username, pw_hash, salt, full_name, role))
 
         print(f" [OK] Seeded {len(demo_accounts)} operations accounts.")
 
         # ──────────────────────────────────────────────────────────
-        # 2. Machines
+        # 2. Machines & Schema Check
         # ──────────────────────────────────────────────────────────
+        existing_cols = [c[1] for c in cursor.execute("PRAGMA table_info(machines)").fetchall()]
+        cols_to_add = [
+            ("model", "TEXT DEFAULT 'Universal Robots UR5e'"),
+            ("location", "TEXT DEFAULT 'Bay 3'"),
+            ("payload_kg", "REAL DEFAULT 5.0"),
+            ("reach_mm", "REAL DEFAULT 850.0"),
+            ("status", "TEXT DEFAULT 'online'"),
+            ("health_score", "REAL DEFAULT 94.0"),
+            ("rul_hours", "REAL DEFAULT 420.0"),
+            ("manual_text", "TEXT"),
+        ]
+        for col_name, col_def in cols_to_add:
+            if col_name not in existing_cols:
+                cursor.execute(f"ALTER TABLE machines ADD COLUMN {col_name} {col_def}")
+
+        # Clean stale test machines so only canonical 4 exist
+        cursor.execute("DELETE FROM machines WHERE machine_id NOT IN ('ur5e-001', 'kuka-kr10', 'fanuc-crx10', 'abb-irb1200')")
+
         machines = [
             (
                 "ur5e-001",
@@ -120,13 +142,14 @@ def seed_industrial_fleet():
         for m_id, name, m_type, model, loc, payload, reach, status, health, rul in machines:
             cursor.execute("""
                 INSERT INTO machines (
-                    machine_id, name, type, model, location, payload_kg, reach_mm,
+                    machine_id, name, type, install_date, model, location, payload_kg, reach_mm,
                     status, health_score, rul_hours, manual_text
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(machine_id) DO UPDATE SET
                     name = excluded.name,
                     type = excluded.type,
+                    install_date = excluded.install_date,
                     model = excluded.model,
                     location = excluded.location,
                     payload_kg = excluded.payload_kg,
@@ -135,7 +158,7 @@ def seed_industrial_fleet():
                     health_score = excluded.health_score,
                     rul_hours = excluded.rul_hours
             """, (
-                m_id, name, m_type, model, loc, payload, reach,
+                m_id, name, m_type, "2024-01-15", model, loc, payload, reach,
                 status, health, rul,
                 f"Certified operations and maintenance manual for {name} ({model}). Reach: {reach}mm, Payload: {payload}kg.",
             ))
@@ -429,68 +452,64 @@ def seed_industrial_fleet():
         past_repairs = [
             (
                 "rep-ur5-001",
+                "disp-ur5-01",
                 "anm-ur5-past-1",
                 "ur5e-001",
                 "tech-dave-03",
-                "lubrication",
-                "joint_3_temp",
-                "part-ur5-02",
+                json.dumps(["joint_3_torque", "joint_3_temp"]),
+                "recurred",
                 1,
-                "failed",
-                "Applied Kluberplex grease to Joint 3 flange. Thermal elevation returned within 14 operational hours.",
-                "2026-08-10 09:30:00",
                 "2026-08-10 14:00:00",
                 "2026-08-11 04:00:00",
+                "Applied Kluberplex grease to Joint 3 flange. Thermal elevation returned within 14 operational hours.",
             ),
             (
                 "rep-ur5-002",
+                "disp-ur5-02",
                 "anm-ur5-past-2",
                 "ur5e-001",
                 "tech-dave-03",
-                "recalibration",
-                "joint_3_torque",
-                None,
-                0,
-                "failed",
-                "Zeroed torque sensors and adjusted PID velocity feedforward. Backlash reappeared in cycle 420.",
-                "2026-08-28 11:15:00",
+                json.dumps(["joint_3_torque"]),
+                "recurred",
+                2,
                 "2026-08-28 13:45:00",
                 "2026-08-29 18:30:00",
+                "Zeroed torque sensors and adjusted PID velocity feedforward. Backlash reappeared in cycle 420.",
             ),
             (
                 "rep-ur5-003",
+                "disp-ur5-03",
                 "anm-ur5-past-3",
                 "ur5e-001",
                 "tech-marcus-02",
-                "inspection",
-                "joint_3_torque",
-                None,
-                0,
+                json.dumps(["joint_3_torque"]),
                 "partial",
-                "Tightened flexspline housing bolts to 12.5 Nm. Stabilized for 11 days then torque drift resumed.",
-                "2026-09-12 08:00:00",
+                3,
                 "2026-09-12 11:30:00",
                 "2026-09-23 09:15:00",
+                "Tightened flexspline housing bolts to 12.5 Nm. Stabilized for 11 days then torque drift resumed.",
             ),
         ]
 
-        for rid, anmid, mid, tid, act, fault, pid, pused, outc, notes, started, completed, rec_at in past_repairs:
+        for rid, dispid, anmid, mid, tid, fsig, outc, reccnt, res_at, rec_at, notes in past_repairs:
             cursor.execute("""
                 INSERT INTO repair_outcomes (
-                    id, anomaly_id, machine_id, technician_id, action_taken,
-                    fault_type, part_id, part_used, outcome, notes,
-                    started_at, completed_at, recurrence_detected_at
+                    id, dispatch_id, anomaly_id, machine_id, technician_id,
+                    fault_signature, outcome, recurrence_count, resolved_at,
+                    recurred_at, notes
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(id) DO UPDATE SET
                     outcome = excluded.outcome,
                     notes = excluded.notes,
-                    recurrence_detected_at = excluded.recurrence_detected_at
-            """, (rid, anmid, mid, tid, act, fault, pid, pused, outc, notes, started, completed, rec_at))
+                    recurred_at = excluded.recurred_at
+            """, (rid, dispid, anmid, mid, tid, fsig, outc, reccnt, res_at, rec_at, notes))
 
         print(f" [OK] Seeded {len(past_repairs)} historical repair records for UR5e recurrence reasoning.")
 
         conn.commit()
+    finally:
+        conn.close()
 
     print("\n[COMPLETE] Tenure Industrial Fleet & Operations initialization finished!")
 
