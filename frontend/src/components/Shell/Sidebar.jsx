@@ -85,7 +85,7 @@ export default function Sidebar() {
 
       {/* Navigation with shared layout pill */}
       <nav className="sidebar__nav">
-        {navItems.map(({ to, label, icon: Icon }) => {
+        {navItems.map(({ to, label, icon: Icon, badge }) => {
           const isActive = to === '/' ? location.pathname === '/' : location.pathname.startsWith(to);
 
           return (
@@ -104,7 +104,7 @@ export default function Sidebar() {
               )}
               <Icon className="sidebar__link-icon" strokeWidth={1.5} />
               <span className="sidebar__link-label">{label}</span>
-              {item.badge && (
+              {badge && (
                 <span style={{
                   marginLeft: 'auto',
                   background: 'var(--terracotta, #c4623b)',
@@ -115,7 +115,7 @@ export default function Sidebar() {
                   borderRadius: '9999px',
                   lineHeight: '1',
                 }}>
-                  {item.badge}
+                  {badge}
                 </span>
               )}
             </NavLink>
