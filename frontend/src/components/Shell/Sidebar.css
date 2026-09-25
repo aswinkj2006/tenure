@@ -148,3 +148,77 @@
   color: var(--text-tertiary, #A8967F);
   padding: 0 4px;
 }
+
+.sidebar__user-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-radius: var(--radius-inner, 12px);
+  background: rgba(255, 251, 245, 0.5);
+  border: 1px solid rgba(226, 205, 178, 0.6);
+  margin-top: 4px;
+}
+
+.sidebar__user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.sidebar__user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(184, 114, 59, 0.15);
+  color: var(--terracotta, #B8723B);
+  font-weight: 600;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sidebar__user-details {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebar__user-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--charcoal, #332415);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar__user-role {
+  font-size: 0.7rem;
+  color: var(--text-secondary, #7A6552);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar__logout-btn {
+  background: none;
+  border: none;
+  color: var(--text-tertiary, #A8967F);
+  padding: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.sidebar__logout-btn:hover {
+  color: var(--critical, #B23A2E);
+  background: rgba(178, 58, 46, 0.1);
+}
+

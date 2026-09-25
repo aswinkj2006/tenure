@@ -46,10 +46,19 @@ export default function TopBar() {
     }
   };
 
+  let userName = 'Technician';
+  try {
+    const stored = localStorage.getItem('tenure_user');
+    if (stored) {
+      const u = JSON.parse(stored);
+      userName = u.name ? u.name.split(' ')[0] : 'Technician';
+    }
+  } catch {}
+
   return (
     <header className="topbar glass-strong">
       <div className="topbar__greeting">
-        <span className="topbar__greeting-text">{greeting}, Technician</span>
+        <span className="topbar__greeting-text">{greeting}, {userName}</span>
         <span className="topbar__greeting-date font-mono">{dateStr}</span>
       </div>
 

@@ -25,6 +25,7 @@ from typing import Any
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -59,8 +60,17 @@ latest_readings: dict[str, dict[str, float]] = {}
 HISTORY_SIZE = 60
 sensor_history: dict[str, list[dict[str, Any]]] = {}
 
-# Background task handle
-_sensor_task: asyncio.Task | None = None
+# Timestamp of latest live ingestion from ProtoTwin
+last_real_ingest_time: float = 0.0
+
+# Stream health tracking
+stream_is_alive: bool = False
+stream_restart_count: int = 0
+
+class TelemetryIngestPayload(BaseModel):
+    machine_id: str = "ur5e-001"
+    sensors: dict[str, float]
+    ts: str | None = None
 
 
 
@@ -96,13 +106,11 @@ async def lifespan(app: FastAPI):
         await sim_client.connect()
         print("[anomaly_service] Using synthetic Mock ProtoTwin client.")
 
-
-    # Start the background sensor streaming task
-    _sensor_task = asyncio.create_task(_sensor_stream_loop())
-    print("[anomaly_service] Sensor streaming started.")
+    # Start the background sensor streaming watchdog (auto-restarts on crash)
+    _sensor_task = asyncio.create_task(_stream_watchdog())
+    print("[anomaly_service] Sensor stream watchdog started.")
 
     yield
-
 
     # Shutdown
     if _sensor_task:
@@ -133,14 +141,40 @@ app.add_middleware(
 # Background: sensor streaming loop
 # ──────────────────────────────────────────────────────────
 
+async def _stream_watchdog():
+    """Watchdog that keeps _sensor_stream_loop alive, restarting it on any crash."""
+    global stream_restart_count, stream_is_alive
+    while True:
+        try:
+            stream_is_alive = True
+            print(f"[anomaly_service] Starting sensor stream (attempt #{stream_restart_count + 1})")
+            await _sensor_stream_loop()
+        except asyncio.CancelledError:
+            stream_is_alive = False
+            print("[anomaly_service] Stream watchdog cancelled.")
+            raise
+        except Exception as exc:
+            stream_is_alive = False
+            stream_restart_count += 1
+            print(f"[anomaly_service] Stream crashed ({exc}), restarting in 2s... (restart #{stream_restart_count})")
+            await asyncio.sleep(2)
+
+
 async def _sensor_stream_loop():
     """Continuously read sensors, detect anomalies, record events, and broadcast."""
-    global sim_client, latest_readings
+    global sim_client, latest_readings, stream_is_alive
 
     if not sim_client:
+        await asyncio.sleep(1)
         return
 
     async for reading in sim_client.stream_sensors():
+        stream_is_alive = True
+        # If live telemetry just arrived from ProtoTwin (within last 1.5s), skip mock data
+        if time.time() - last_real_ingest_time < 1.5:
+            await asyncio.sleep(0.1)
+            continue
+
         machine_id = reading.machine_id
         data = reading.to_dict()
 
@@ -274,7 +308,112 @@ async def ws_sensors(websocket: WebSocket, machine_id: str):
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "service": "anomaly_service"}
+    return {
+        "status": "ok",
+        "service": "anomaly_service",
+        "stream_alive": stream_is_alive,
+        "stream_restarts": stream_restart_count,
+        "data_age_seconds": round(time.time() - last_real_ingest_time, 1) if last_real_ingest_time > 0 else None,
+    }
+
+
+@app.get("/stream/status")
+async def stream_status():
+    """Detailed stream health check."""
+    machine_id = "ur5e-001"
+    has_data = machine_id in latest_readings
+    last_ts = latest_readings[machine_id].get("ts") if has_data else None
+    return {
+        "stream_alive": stream_is_alive,
+        "stream_restarts": stream_restart_count,
+        "has_latest_data": has_data,
+        "last_timestamp": last_ts,
+        "live_ingest_age_seconds": round(time.time() - last_real_ingest_time, 1) if last_real_ingest_time > 0 else None,
+        "sim_client_type": type(sim_client).__name__ if sim_client else None,
+        "subscribers": {k: len(v) for k, v in sensor_subscribers.items()},
+    }
+
+
+@app.post("/sensors/ingest")
+async def ingest_sensor_reading(payload: TelemetryIngestPayload):
+    """
+    Direct live telemetry ingestion from ProtoTwin simulator (browser or desktop).
+    Streams exact physics values to the 3D Digital Twin and runs real-time anomaly detection.
+    """
+    global latest_readings, sensor_history, last_real_ingest_time
+    last_real_ingest_time = time.time()
+    machine_id = payload.machine_id
+    ts = payload.ts or datetime.now(timezone.utc).isoformat()
+
+    data: dict[str, Any] = {
+        "ts": ts,
+        "machine_id": machine_id,
+        "sensors": payload.sensors,
+    }
+
+    # Evaluate zero-shot anomaly detection
+    anomaly_eval = detector.evaluate(data)
+    if anomaly_eval.is_anomaly:
+        data["anomaly"] = {
+            "is_anomaly": True,
+            "flagged": anomaly_eval.flagged_sensors,
+            "severity": anomaly_eval.severity,
+            "deviation": anomaly_eval.deviation_magnitude,
+        }
+
+        now_sec = time.time()
+        last_flagged = last_flagged_time.get(machine_id, 0.0)
+        if (now_sec - last_flagged) > 3.0:
+            last_flagged_time[machine_id] = now_sec
+            anomaly_id = str(uuid.uuid4())
+            data["anomaly"]["anomaly_id"] = anomaly_id
+            try:
+                with get_connection() as conn:
+                    cursor = conn.cursor()
+                    cursor.execute(
+                        """
+                        INSERT INTO anomaly_records
+                        (id, machine_id, ts, flagged_sensors, deviation_magnitude, severity, status)
+                        VALUES (?, ?, ?, ?, ?, ?, 'open')
+                        """,
+                        (
+                            anomaly_id,
+                            machine_id,
+                            ts,
+                            json.dumps(anomaly_eval.flagged_sensors),
+                            json.dumps(anomaly_eval.deviation_magnitude),
+                            anomaly_eval.severity,
+                        ),
+                    )
+                    conn.commit()
+                    print(f"[anomaly_service] [ANOMALY] Recorded anomaly {anomaly_id} ({anomaly_eval.severity}) for {machine_id}")
+            except Exception as e:
+                print(f"[anomaly_service] Failed to persist anomaly: {e}")
+            asyncio.create_task(_dispatch_alert(anomaly_id, machine_id, anomaly_eval, ts))
+    else:
+        data["anomaly"] = {"is_anomaly": False}
+
+    # Store latest and append history
+    latest_readings[machine_id] = data
+    if machine_id not in sensor_history:
+        sensor_history[machine_id] = []
+    sensor_history[machine_id].append(data)
+    if len(sensor_history[machine_id]) > HISTORY_SIZE:
+        sensor_history[machine_id].pop(0)
+
+    # Broadcast to all connected digital twin WebSockets
+    if machine_id in sensor_subscribers:
+        msg = json.dumps(data)
+        disconnected = []
+        for ws in sensor_subscribers[machine_id]:
+            try:
+                await ws.send_text(msg)
+            except Exception:
+                disconnected.append(ws)
+        for ws in disconnected:
+            sensor_subscribers[machine_id].remove(ws)
+
+    return {"status": "ok", "anomaly": data["anomaly"]["is_anomaly"]}
 
 
 @app.get("/sensors/{machine_id}/latest")
@@ -327,17 +466,25 @@ async def get_anomalies(machine_id: str, limit: int = 20):
 
 
 
+class InjectAnomalyRequest(BaseModel):
+    scenario: str = "torque_spike"
+    joint: int = 3
+    value: float = 185.0
+    anomaly_type: str = "torque"
+
+
 @app.post("/inject-anomaly")
-async def inject_anomaly(
-    joint: int = 3,
-    anomaly_type: str = "torque",
-    value: float = 185.0,
-):
+async def inject_anomaly(req: InjectAnomalyRequest):
     """
     Inject an anomaly into the live simulation (real ProtoTwin or mock).
+    Accepts JSON body: {scenario, joint, value, anomaly_type}
     """
     if not sim_client:
         raise HTTPException(status_code=400, detail="Simulation client not connected")
+
+    joint = req.joint
+    anomaly_type = req.anomaly_type
+    value = req.value
 
     if isinstance(sim_client, MockProtoTwinClient):
         sim_client.inject_anomaly(joint=joint, anomaly_type=anomaly_type, magnitude=value)

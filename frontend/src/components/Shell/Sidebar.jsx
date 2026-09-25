@@ -1,9 +1,11 @@
-import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Cpu, FileText, Command } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { LayoutDashboard, Cpu, FileText, Command, PlusCircle, LogOut } from 'lucide-react';
 import { motion } from 'framer-motion';
 import StatusDot from '../common/StatusDot';
 import useSensorStore from '../../stores/sensorStore';
 import { SPRING_INTERACTIVE } from '../../utils/motion';
+import { toast } from 'sonner';
 import './Sidebar.css';
 
 /* Inline SVG gear logo mark */
@@ -27,16 +29,48 @@ function LogoMark() {
 
 const navItems = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/machine/ur5e-001', label: 'Machine', icon: Cpu },
-  { to: '/logs', label: 'Logs', icon: FileText },
+  { to: '/machine/ur5e-001', label: 'Machine Twin', icon: Cpu },
+  { to: '/onboard', label: 'Onboard Asset', icon: PlusCircle },
+  { to: '/logs', label: 'Audit Logs', icon: FileText },
 ];
 
 export default function Sidebar() {
   const connected = useSensorStore((s) => s.connected);
   const location = useLocation();
+  const navigate = useNavigate();
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('tenure_user');
+      if (stored) {
+        setCurrentUser(JSON.parse(stored));
+      } else {
+        setCurrentUser({
+          name: 'Dave Miller',
+          role: 'Lead Mechatronics Tech',
+          id: 'tech',
+        });
+      }
+    } catch {
+      // ignore
+    }
+  }, [location.pathname]);
 
   const handleOpenCmd = () => {
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }));
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('tenure_user');
+    toast('Session signed out', { description: 'Redirecting to login portal.' });
+    navigate('/login');
+  };
+
+  const getInitials = (name) => {
+    if (!name) return 'DM';
+    const parts = name.split(' ');
+    return parts.length >= 2 ? `${parts[0][0]}${parts[1][0]}` : name.slice(0, 2).toUpperCase();
   };
 
   return (
@@ -73,7 +107,7 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* Footer with Command Shortcut & Connection Indicator */}
+      {/* Footer with Command Shortcut, Telemetry Status & User info */}
       <div className="sidebar__footer">
         <button
           type="button"
@@ -90,8 +124,30 @@ export default function Sidebar() {
 
         <div className="sidebar__status">
           <StatusDot status={connected ? 'ok' : 'offline'} pulse={connected} />
-          <span>{connected ? 'Telemetry live' : 'Telemetry standby'}</span>
+          <span>{connected ? 'ProtoTwin 20Hz Live' : 'Telemetry Standby'}</span>
         </div>
+
+        {currentUser && (
+          <div className="sidebar__user-box">
+            <div className="sidebar__user-info">
+              <div className="sidebar__user-avatar">
+                {getInitials(currentUser.name)}
+              </div>
+              <div className="sidebar__user-details">
+                <span className="sidebar__user-name">{currentUser.name}</span>
+                <span className="sidebar__user-role">{currentUser.role}</span>
+              </div>
+            </div>
+            <button
+              type="button"
+              className="sidebar__logout-btn"
+              onClick={handleLogout}
+              title="Sign Out"
+            >
+              <LogOut size={15} />
+            </button>
+          </div>
+        )}
       </div>
     </aside>
   );
